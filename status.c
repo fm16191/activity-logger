@@ -15,7 +15,8 @@
 
 static volatile int keepRunning = 1;
 
-int catcher(Display* disp, XErrorEvent* xe) {
+int catcher() {
+    // Display* disp, XErrorEvent* xe
     // No window
 #ifdef DEBUG
     printf("=== Catched error ===\n");
@@ -28,6 +29,7 @@ int catcher(Display* disp, XErrorEvent* xe) {
     printf("=== Catched error ===\n");
     fflush(fdebug);
 #endif
+    return 0;
 }
 
 unsigned char* get_string_property(Display* display, Window* window, char* property_name) {
@@ -40,21 +42,22 @@ unsigned char* get_string_property(Display* display, Window* window, char* prope
     status = XGetWindowProperty(display, *window, filter_atom, 0, BUFFER_LEN, False, AnyPropertyType,
         &actual_type, &actual_format, &nitems, &bytes_after, &prop);
 
-    if (status == BadWindow) return ""; // window id # 0x%lx does not exists
-    else if (status != Success) return ""; // XGetWindowProperty failed!
+    if (status == BadWindow) return (unsigned char*)""; // window id # 0x%lx does not exists
+    else if (status != Success) return (unsigned char*)""; // XGetWindowProperty failed!
     else return prop;
 }
 
 long get_long_property(Display* display, Window* window, char* property_name) {
     unsigned char* prop = get_string_property(display, window, property_name);
-    if (!strcmp(prop, "")) return -1;
+    if (!strcmp((char*)prop, "")) return -1;
+
     long long_property = prop[0] + (prop[1] << 8) + (prop[2] << 16) + (prop[3] << 24);
     XFree(prop);
     return long_property;
 }
 
 
-int printkey(Display* display, XEvent ev) {
+// void printkey(Display* display, XEvent ev) {
     // KeySym touche, keysym;
     // char caractere[10], modifiers[40];
     // int nbre;
@@ -86,7 +89,7 @@ int printkey(Display* display, XEvent ev) {
     // else
     //     printf("Modifiers actifs %s\n", modifiers);
     // printf("Les keysyms associes : ");
-    // for (i = 0; i < nbre_keysym; ++i) {
+    // for (i = 0; i < nbre_keysym; ++i){
     //     if ((keysym = XKeycodeToKeysym(display, ev.xkey.keycode, i))
     //         == NoSymbol)
     //         printf("NoSymbol ");
@@ -94,7 +97,7 @@ int printkey(Display* display, XEvent ev) {
     //         printf("%s ", XKeysymToString(keysym));
     // }
     // printf("\n\n");
-}
+// }
 
 void SIGINT_handler() {
     printf("closing...\n");
@@ -120,7 +123,7 @@ int main(void) {
     char time_sec[12];
     struct timeval time_milisec;
 
-    char* last_name;
+    char* last_name = NULL;
     unsigned char* name;
 
     unsigned char* data;
@@ -133,7 +136,7 @@ int main(void) {
     int format;
     unsigned long items, bytes_left;
 
-    long pid;
+    long pid = 0;
     FILE* fp;
 
     char* fk_filepath = malloc(sizeof(char) * BUFFER_LEN);
@@ -162,22 +165,17 @@ int main(void) {
             break;
 
         // printf("Event Type  : %d\n", ev.type);
-        
+
         if (ev.type == ButtonPress) continue;
 
-        if (ev.type == ButtonRelease){
+        if (ev.type == ButtonRelease) {
             name = get_string_property(display, &window, "_NET_WM_NAME");
-            if (strcmp(name, last_name) != 0) {
-                last_name = name;
+            if (strcmp(last_name, (char*)name) != 0) {
+                last_name = strdup((char*)name);
                 gettimeofday(&time_milisec, NULL);
 
                 fprintf(fd, "[%ld-%03lu] [%05lu] [%s] %s\n", time_milisec.tv_sec, ev.xkey.time % 1000, pid, comm, name);
                 fflush(fd);
-
-#ifdef DEBUG
-                fprintf(fdebug, "[%ld-%03lu] [%05lu] [%s] %s\n", time_milisec.tv_sec, ev.xkey.time % 1000, pid, comm, name);
-                fflush(fdebug);
-#endif
             }
             XFree(name);
         }
@@ -197,34 +195,30 @@ int main(void) {
             fflush(fk);
 
             name = get_string_property(display, &window, "_NET_WM_NAME");
-            if (strcmp(name, last_name) != 0) {
-                last_name = name;
+            if (strcmp(last_name, (char*)name) != 0) {
+                last_name = strdup((char*)name);
                 gettimeofday(&time_milisec, NULL);
 
                 fprintf(fd, "[%ld-%03lu] [%05lu] [%s] %s\n", time_milisec.tv_sec, ev.xkey.time % 1000, pid, comm, name);
                 fflush(fd);
-#ifdef DEBUG
-                fprintf(fdebug, "[%ld-%03lu] [%05lu] [%s] %s\n", time_milisec.tv_sec, ev.xkey.time % 1000, pid, comm, name);
-                fflush(fdebug);
-#endif
             }
             XFree(name);
         }
 
         if (ev.type == PropertyNotify) {
-            unsigned char *atom;
+            char* atom;
             atom = XGetAtomName(display, ev.xproperty.atom);
             if (strcmp("_NET_ACTIVE_WINDOW", atom) == 0) {
 
                 int status = XGetWindowProperty(display, root, ev.xproperty.atom, 0, 1, False, AnyPropertyType,
-                                                &type, &format, &items, &bytes_left, &data);
+                    &type, &format, &items, &bytes_left, &data);
 
-                if (status!=Success){
+                if (status != Success) {
                     keepRunning = 0;
                     printf("XGetWindowProperty Failed !");
                     break;
                 }
-                if (!items){
+                if (!items) {
                     XFree(data);
                     keepRunning = 0;
                     printf("XGetWindowProperty -> No window ??");
@@ -242,16 +236,17 @@ int main(void) {
 
                 pid = get_long_property(display, &window, "_NET_WM_PID");
                 if (pid == -1) { // BadWindow ERROR
-                    fprintf(fd, "[%ld-%03lu] [%05lu] [%s]\n", time_milisec.tv_sec, time_milisec.tv_usec / 1000, 0, "Desktop");
+                    fprintf(fd, "[%ld-%03lu] [%05d] [%s]\n", time_milisec.tv_sec, time_milisec.tv_usec / 1000, 0, "Desktop");
                     fflush(fd);
                 }
                 else {
                     name = get_string_property(display, &window, "_NET_WM_NAME");
-                    last_name = name;
+                    free(last_name);
+                    last_name = strdup((char*)name);
 
                     // printf("WM_CLASS: %s\n", get_string_property(display, window, "WM_CLASS"));
 
-                    sprintf(proc_path, "/proc/%d/comm", pid);
+                    sprintf(proc_path, "/proc/%ld/comm", pid);
 
                     fp = fopen(proc_path, "r");
                     comm = strtok(fgets(comm, BUFFER_LEN, fp), "\n");
@@ -259,6 +254,8 @@ int main(void) {
 
                     fprintf(fd, "[%ld-%03lu] [%05lu] [%s] %s\n", time_milisec.tv_sec, time_milisec.tv_usec / 1000, pid, comm, name);
                     fflush(fd);
+
+                    XFree(name);
                 }
             }
             XFree(atom);

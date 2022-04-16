@@ -1,5 +1,5 @@
 import os
-import sys
+from sys import argv
 import json
 from datetime import datetime
 from datetime import timedelta
@@ -96,8 +96,19 @@ def data_by_exe(data):
 
 
 if __name__ == "__main__":
+    filename = None
+    if len(argv) > 1:
+        filename = argv[1]
+    else:
+        ll = sorted(os.listdir("."), key=os.path.getmtime, reverse=True)
+        for file in ll:
+            if file.endswith(".wins"):
+                filename = file
+                break
+    if not filename: 
+        print("No window log file specified")
+        exit
 
-    filename = "28-03-2022_00h19m30.wins"
     print(f"Reading {filename} ...")
     data = read_data(filename)
     data = add_duration(data)

@@ -1,3 +1,5 @@
 *.keys
 *.wins
 *.stdata
+status
+*.o

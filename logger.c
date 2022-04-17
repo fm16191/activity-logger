@@ -27,7 +27,6 @@ int catcher() {
     printf("Catched error : %lu\n", xe->request_code);
     printf("Catched error : %lu\n", xe->minor_code);
     printf("=== Catched error ===\n");
-    fflush(fdebug);
 #endif
     return 0;
 }
@@ -56,48 +55,6 @@ long get_long_property(Display* display, Window* window, char* property_name) {
     return long_property;
 }
 
-
-// void printkey(Display* display, XEvent ev) {
-    // KeySym touche, keysym;
-    // char caractere[10], modifiers[40];
-    // int nbre;
-
-    // int nbre_keysym, i;
-    // nbre = XLookupString(&ev, caractere, 10, &touche, 0);
-    // // XKbKeycodeToKeysym
-    // caractere[nbre] = '\0';
-    // printf("Le keycode est %d (0x%x), le keysym est %d (0x%x)\n",
-    //     ev.xkey.keycode, ev.xkey.keycode,
-    //     XKeysymToString(touche), touche);
-    // if (nbre == 0)
-    //     printf("La chaine ascii correspondante est vide\n");
-    // else
-    //     printf("La chaine ascii obtenue est %s\n", caractere);
-    // modifiers[0] = '\0';
-    // if (ev.xkey.state & ShiftMask)
-    //     strcat(modifiers, "Shift ");
-    // if (ev.xkey.state & LockMask)
-    //     strcat(modifiers, "Lock ");
-    // if (ev.xkey.state & ControlMask)
-    //     strcat(modifiers, "Control ");
-    // if (ev.xkey.state & Mod1Mask)
-    //     strcat(modifiers, "Mod1 ");
-    // if (ev.xkey.state & Mod2Mask)
-    //     strcat(modifiers, "Mod2 ");
-    // if (ev.xkey.state & Mod3Mask)
-    //     printf("Aucun modifier actif\n");
-    // else
-    //     printf("Modifiers actifs %s\n", modifiers);
-    // printf("Les keysyms associes : ");
-    // for (i = 0; i < nbre_keysym; ++i){
-    //     if ((keysym = XKeycodeToKeysym(display, ev.xkey.keycode, i))
-    //         == NoSymbol)
-    //         printf("NoSymbol ");
-    //     else
-    //         printf("%s ", XKeysymToString(keysym));
-    // }
-    // printf("\n\n");
-// }
 
 void SIGINT_handler() {
     printf("closing...\n");
@@ -139,17 +96,13 @@ int main(void) {
     long pid = 0;
     FILE* fp;
 
-    char* fk_filepath = malloc(sizeof(char) * BUFFER_LEN);
     char* fd_filepath = malloc(sizeof(char) * BUFFER_LEN);
 
     strftime(time_sec, BUFFER_LEN, "%d-%m-%Y_%Hh%Mm%S", tm);
-    sprintf(fk_filepath, "%s.keys", time_sec);
     sprintf(fd_filepath, "%s.wins", time_sec);
 
-    FILE* fk = fopen(fk_filepath, "w");
     FILE* fd = fopen(fd_filepath, "w");
 
-    free(fk_filepath);
     free(fd_filepath);
 
     fprintf(fd, "Starting at %s\n", start_time);
@@ -191,8 +144,6 @@ int main(void) {
             // printf("KEY State    : %u\n", ev.xkey.state);
 
             // printf("KEY keycode  : %u\n", ev.xkey.keycode);
-            fprintf(fk, "%u\n", ev.xkey.keycode);
-            fflush(fk);
 
             name = get_string_property(display, &window, "_NET_WM_NAME");
             if (strcmp(last_name, (char*)name) != 0) {
@@ -262,7 +213,6 @@ int main(void) {
         }
     }
     printf("closing !\n");
-    fclose(fk);
     fclose(fd);
 
     free(comm);

@@ -14,7 +14,7 @@ build: logger.o
 	$(CC) $(CFLAGS) $(OFLAGS) -c $^ -o $@
 
 clean:
-	rm -Rf $(EXE)
+	rm -Rf $(EXE) *.o
 
 mem: build
 	valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all -s ./$(EXE)

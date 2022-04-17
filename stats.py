@@ -6,13 +6,20 @@ from datetime import timedelta
 
 from colors import C
 
+def datetime_from_timestamp(str_timestamp):
+    timestamp = int(str_timestamp[:-4])
+    microseconds = int(str_timestamp[-3:])*1000
+    return datetime.fromtimestamp(timestamp) + timedelta(microseconds=microseconds)
+
 def read_data(filename):
     fo = open(filename, "r")
     foo = fo.readlines()
     fo.close()
 
     data = dict()
-    data['starting_date_str'] = foo[0][:1]
+    data['starting_date_str'] = datetime_from_timestamp(foo[3].split(" ")[0][1:-1])
+    data['ending_date_str'] = datetime_from_timestamp(foo[-1].split(" ")[0][1:-1])
+
     data['data'] = []
 
     for i, line in enumerate(foo[2:]):
@@ -109,8 +116,12 @@ if __name__ == "__main__":
         print("No window log file specified")
         exit
 
-    print(f"Reading {filename} ...")
+    print("====== X11 Activity logger ======")
+    print(f"Reading {filename} ...\n") # , end="\r"
     data = read_data(filename)
+    print(f"Started on      {C.YELLOW}{str(data['starting_date_str'])[:-7]}{C.END}")
+    print(f"Ended   on      {C.YELLOW}{str(data['ending_date_str'])[:-7]}{C.END}")
+    print(f"Total duration  {C.GREEN}{str(data['ending_date_str'] - data['starting_date_str'])[:-7]}{C.END}")
     data = add_duration(data)
     data_by_exe(data)
     data_by_activity_name(data)

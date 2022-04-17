@@ -8,7 +8,7 @@ EXE=status
 
 .PHONY: all mem
 
-all: status.o
+all: logger.o
 	$(CC) $(CFLAGS) $(OFLAGS) $? -o $(EXE) $(LIBS)
 
 %.o: %.c

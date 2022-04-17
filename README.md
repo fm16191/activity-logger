@@ -36,6 +36,12 @@ At any time, you can watch where a summary of your latest activities by using
 
 > By default, if no log file is specified, the last modified .wins file will be read.
 
+# Keylogger feature (not included by default)
+In addition, a small keylogger has been implemented, but it is not included by default. It may be used in the future. 
+
+To enable it, `git apply keylogger.diff`.
+
+For each keystroke, a new line will be written in `<date>.keys` including the timestamp in microseconds, the mouse position at that moment, the state and the code of the key.
 
 # Known issues
 

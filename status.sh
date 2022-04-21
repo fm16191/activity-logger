@@ -27,7 +27,7 @@ daemon(){
 }
 
 daemon_running(){
-    processes=($(pgrep -x start.sh))
+    processes=($(pgrep -x status.sh))
     if [ ${#processes[@]} = 1 ];
     then
         false
@@ -42,8 +42,8 @@ daemon_running_echo(){
 }
 
 daemon_kill(){
-    # for all start.sh process except it's own pid
-    processes=($(pgrep -x start.sh))
+    # for all status.sh process except it's own pid
+    processes=($(pgrep -x status.sh))
     if [ ${#processes[@]} = 1 ];
     then
         echo "No daemon is running"
@@ -54,7 +54,7 @@ daemon_kill(){
         kill "$p"
         echo "Killing daemon $p"
     done && printf "\r" || echo "No daemon terminated"
-    # killall start.sh
+    # killall status.sh
 }
 
 print_help(){

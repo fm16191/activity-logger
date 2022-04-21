@@ -43,3 +43,4 @@ class C:
     OKGREEN = '\033[92m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+    ITALIC = '\033[3m'

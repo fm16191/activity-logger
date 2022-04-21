@@ -10,8 +10,9 @@ X11 Activity Logger is a lightweigt activity logger written in C for X11.
 
 To be added :
 - [x] Autorestart if the logger fails (daemon)
+- [x] Adapt the ouput size with the terminal size (displays ... if too long)
 - [ ] Activity history with duration and in tree if same process
-- [ ] Analyze multiple log files
+- [ ] Analyze multiple log files at once
 - [ ] Sort windows names by application name
 - [ ] Longest session without window changing
 - [ ] Sort applications according to the number of keystrokes made

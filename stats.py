@@ -40,13 +40,9 @@ def read_data(filename):
     return data
 
 def add_duration(data):
-    timestamp = int(data['data'][0]['timestamp'][:-4])
-    microseconds = int(data['data'][0]['timestamp'][-3:])*1000
-    start = datetime.fromtimestamp(timestamp)+ timedelta(microseconds=microseconds)
+    start = datetime_from_timestamp(data['data'][0]['timestamp'])
     for i, item in enumerate(data['data'][1:]):
-        timestamp = int(item['timestamp'][:-4])
-        microseconds = int(item['timestamp'][-3:])*1000
-        end = datetime.fromtimestamp(timestamp) + timedelta(microseconds=microseconds)
+        end = datetime_from_timestamp(item['timestamp'])
 
         duration = end - start
         if duration < timedelta(microseconds=0): duration = - duration
@@ -58,7 +54,7 @@ def add_duration(data):
     data['data'][-1]['duration'] = timedelta(microseconds=0)
     return data
 
-def data_by_activity_name(data):
+def data_by_activity_name(data, terminal_size_max=None):
     activities = {}
 
     for i, item in enumerate(data['data']):
@@ -74,12 +70,15 @@ def data_by_activity_name(data):
     activities_by_duration = sorted(activities.items(), key=lambda sub_data:sub_data[1]['total_duration'], reverse=True)
     
     print(f"\n{C.BOLD}{C.GREEN}{'Times':5}{C.YELLOW}{'        Time'}\t{C.CYAN}{'Window Name'}{C.END}\n")
+
     for item in activities_by_duration[:20]:
         (name, d) = item
+        if terminal_size_max and len(name) > terminal_size_max - 24 - 4:
+            name = name[: terminal_size_max - 24 - 4] + "..."
         print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{name}")
 
 
-def data_by_exe(data):
+def data_by_exe(data, terminal_size_max=None):
     exes = {}
 
     for i, item in enumerate(data['data']):
@@ -95,8 +94,11 @@ def data_by_exe(data):
     exes_by_duration = sorted(exes.items(), key=lambda sub_data:sub_data[1]['total_duration'], reverse=True)
     
     print(f"\n{C.BOLD}{C.GREEN}{'Times':5}{C.YELLOW}{'        Time'}\t{C.CYAN}{'Executable'}{C.END}\n")
+
     for item in exes_by_duration[:20]:
         (exe, d) = item
+        if terminal_size_max and len(exe) > terminal_size_max-24-4:
+            exe = exe[:terminal_size_max-24-4] + "..."
         print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{exe}")
 
 
@@ -116,6 +118,12 @@ if __name__ == "__main__":
         print("No window log file specified")
         exit
 
+    terminal_size_max = os.get_terminal_size().columns
+    if terminal_size_max < 40:
+        print(f"{C.ITALIC}Warning : Terminal size {terminal_size_max} too short (40 requested){C.END}")
+        terminal_size_max = None
+        exit()
+
     print("====== X11 Activity logger ======")
     print(f"Reading {filename} ...\n") # , end="\r"
     data = read_data(filename)
@@ -123,5 +131,6 @@ if __name__ == "__main__":
     print(f"Ended   on      {C.YELLOW}{str(data['ending_date_str'])[:-7]}{C.END}")
     print(f"Total duration  {C.GREEN}{str(data['ending_date_str'] - data['starting_date_str'])[:-7]}{C.END}")
     data = add_duration(data)
-    data_by_exe(data)
-    data_by_activity_name(data)
+
+    data_by_exe(data, terminal_size_max)
+    data_by_activity_name(data, terminal_size_max)

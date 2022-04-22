@@ -41,9 +41,12 @@ unsigned char* get_string_property(Display* display, Window* window, char* prope
     status = XGetWindowProperty(display, *window, filter_atom, 0, BUFFER_LEN, False, AnyPropertyType,
         &actual_type, &actual_format, &nitems, &bytes_after, &prop);
 
+#ifdef DEBUG
     if (status != Success) {
         printf("Catched error : %d\n", status);
     }
+#endif
+
     if (status == BadWindow) return (unsigned char*)""; // window id # 0x%lx does not exists
     else if (status != Success) return (unsigned char*)""; // XGetWindowProperty failed!
     else return prop;

@@ -67,12 +67,9 @@ void SIGINT_handler() {
 }
 
 void check(unsigned char** var) {
-    printf("var : %s\n", *var);
     if (!*var) {
-        printf("Non var\n");
         XFree(*var);
         *var = (unsigned char*)strdup("ERROR");
-        printf("[[%s]]\n", *var);
     }
 }
 

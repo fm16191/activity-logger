@@ -23,6 +23,7 @@ daemon(){
     do
         is_running && sleep 1 || start > /dev/null
     done & disown
+    sleep 0.1
     is_running && echo "Daemon started !" || echo "Daemon failed"
 }
 

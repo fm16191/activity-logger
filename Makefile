@@ -1,6 +1,7 @@
 CC=gcc
-CFLAGS=-Wall -Wextra
-OFLAGS=-march=native -mtune=native -O2 -Os
+CFLAGS=-Wall -Wextra -g3
+OFLAGS=-march=native -mtune=native
+#-O2 -Os
 
 LIBS= -lX11
 EXE=status

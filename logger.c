@@ -41,6 +41,9 @@ unsigned char* get_string_property(Display* display, Window* window, char* prope
     status = XGetWindowProperty(display, *window, filter_atom, 0, BUFFER_LEN, False, AnyPropertyType,
         &actual_type, &actual_format, &nitems, &bytes_after, &prop);
 
+    if (status != Success) {
+        printf("Catched error : %d\n", status);
+    }
     if (status == BadWindow) return (unsigned char*)""; // window id # 0x%lx does not exists
     else if (status != Success) return (unsigned char*)""; // XGetWindowProperty failed!
     else return prop;
@@ -48,6 +51,7 @@ unsigned char* get_string_property(Display* display, Window* window, char* prope
 
 long get_long_property(Display* display, Window* window, char* property_name) {
     unsigned char* prop = get_string_property(display, window, property_name);
+    if (!prop) return -1;
     if (!strcmp((char*)prop, "")) return -1;
 
     long long_property = prop[0] + (prop[1] << 8) + (prop[2] << 16) + (prop[3] << 24);
@@ -60,6 +64,16 @@ void SIGINT_handler() {
     printf("closing...\n");
     // -fno-stack-protector
     keepRunning = 0;
+}
+
+void check(unsigned char** var) {
+    printf("var : %s\n", *var);
+    if (!*var) {
+        printf("Non var\n");
+        XFree(*var);
+        *var = (unsigned char*)strdup("ERROR");
+        printf("[[%s]]\n", *var);
+    }
 }
 
 int main(void) {
@@ -123,7 +137,9 @@ int main(void) {
 
         if (ev.type == ButtonRelease) {
             name = get_string_property(display, &window, "_NET_WM_NAME");
-            if (strcmp(last_name, (char*)name) != 0) {
+            check(&name);
+            check((unsigned char**)&last_name);
+            if (strcmp((char*)name, "ERROR") != 0 && strcmp(last_name, (char*)name) != 0) {
                 last_name = strdup((char*)name);
                 gettimeofday(&time_milisec, NULL);
 
@@ -146,7 +162,9 @@ int main(void) {
             // printf("KEY keycode  : %u\n", ev.xkey.keycode);
 
             name = get_string_property(display, &window, "_NET_WM_NAME");
-            if (strcmp(last_name, (char*)name) != 0) {
+            check(&name);
+            check((unsigned char**)&last_name);
+            if (strcmp((char*)name, "ERROR") != 0 && strcmp(last_name, (char*)name) != 0) {
                 last_name = strdup((char*)name);
                 gettimeofday(&time_milisec, NULL);
 
@@ -159,7 +177,7 @@ int main(void) {
         if (ev.type == PropertyNotify) {
             char* atom;
             atom = XGetAtomName(display, ev.xproperty.atom);
-            if (strcmp("_NET_ACTIVE_WINDOW", atom) == 0) {
+            if (atom && strcmp("_NET_ACTIVE_WINDOW", atom) == 0) {
 
                 int status = XGetWindowProperty(display, root, ev.xproperty.atom, 0, 1, False, AnyPropertyType,
                     &type, &format, &items, &bytes_left, &data);
@@ -192,7 +210,9 @@ int main(void) {
                 }
                 else {
                     name = get_string_property(display, &window, "_NET_WM_NAME");
-                    free(last_name);
+                    XFree(last_name);
+                    last_name = NULL;
+                    check(&name);
                     last_name = strdup((char*)name);
 
                     // printf("WM_CLASS: %s\n", get_string_property(display, window, "WM_CLASS"));

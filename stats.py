@@ -33,9 +33,15 @@ def read_data(filename):
     foo = fo.readlines()
     fo.close()
 
-    data = dict()
+    data = {
+        'data': [],
+        'starting_date_str': None,
+        'ending_date_str': None
+    }
 
-    data['data'] = []
+    if len(foo) < 4:
+        return data
+
     data['starting_date_str'] = get_timestamp(foo[3])
     data['ending_date_str'] = get_timestamp(foo[-1])
 
@@ -166,6 +172,10 @@ if __name__ == "__main__":
     print("====== X11 Activity logger ======")
     print(f"Reading {filename} ...\n") # , end="\r"
     data = read_data(filename)
+    if not data['starting_date_str']:
+        DERROR('Empty or invalid file')
+        exit()
+
     print(f"Started    on   {C.YELLOW}{str(data['starting_date_str'])[:-7]}{C.END}")
     print(f"Last entry on   {C.YELLOW}{str(data['ending_date_str'])[:-7]}{C.END}")
     print(f"Total duration  {C.GREEN}{str(data['ending_date_str'] - data['starting_date_str'])[:-7]}{C.END}")

@@ -102,21 +102,22 @@ def read_files(filenames):
         tdata['data'].extend(data['data'])
 
         # Get last timestamp to indicate it wasn't recording besides that point.
-        last_timestamp = data['data'][-1]['timestamp']
-        ltimestamp_ms = int(last_timestamp[-3:])
-        ltimestamp_s = int(last_timestamp[:-4])
-        if ltimestamp_ms > 0:
-            ltimestamp_ms = ltimestamp_ms + 1
-        else:
-            ltimestamp_ms = 0
-            ltimestamp_s = ltimestamp_s + 1
+        if len(filenames) != 1:
+            last_timestamp = data['data'][-1]['timestamp']
+            ltimestamp_ms = int(last_timestamp[-3:])
+            ltimestamp_s = int(last_timestamp[:-4])
+            if ltimestamp_ms > 0:
+                ltimestamp_ms = ltimestamp_ms + 1
+            else:
+                ltimestamp_ms = 0
+                ltimestamp_s = ltimestamp_s + 1
 
-        tdata['data'].extend([{
-            'timestamp': f"{ltimestamp_s}-{ltimestamp_ms:03d}",
-            'pid': "00000",
-            'exe': "Shutdown",
-            'name': "Shutdown"
-        }])
+            tdata['data'].extend([{
+                'timestamp': f"{ltimestamp_s}-{ltimestamp_ms:03d}",
+                'pid': "00000",
+                'exe': "Shutdown",
+                'name': "Shutdown"
+            }])
 
     if not tdata['data']:
         DINFO("No data to be analyzed")
@@ -211,32 +212,42 @@ def data_by_exe(data, terminal_size_max=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
-    parser.add_argument('-x', '--exe', action='store', nargs='*', default=True,
+    parser.add_argument('-f', '--file',
+        action='store', nargs='*', help='specify files to be read') # type=argparse.FileType('r')
+    parser.add_argument('-l', '--last', action='store', nargs='?', metavar="L",
+        type=int, default=1, help='Get the N latest(s) log file(s)')
+
+    parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
         # required=False,
         # metavar='EXE',
         help='sort logged activities by executable name')
-    parser.add_argument('-w', '--windows', action='store_true', default=True,
+    parser.add_argument('-w', '--windows', action='store_true', default=False,
         help='sort logged activities by windows name')
     parser.add_argument('-s', '--longuest-sessions', action='store_true',
         help='sort logged activities by longuest time spent on without switching')
-    parser.add_argument('-v', '--verbose', action='store_true', default=0)
-    parser.add_argument('-f', '--file',
-        action='store', nargs='*') # type=argparse.FileType('r')
+
+    parser.add_argument('-v', '--verbose', action='store_true', default=False)
 
     args = parser.parse_args()
     if args.verbose:
         print(args)
 
-    filenames = None
+    filenames = []
     if args.file:
         filenames = args.file
-    else: # Get last filename by default
+    else :
+        # --last 1 is the default at each program call.
+        if args.last <= 0:
+            DERROR("--last requires a non null positive integer")
+            parser.print_help()
+            exit()
         ll = sorted(os.listdir("."), key=os.path.getmtime, reverse=True)
         for file in ll:
             if file.endswith(".wins"):
-                filenames = [file]
-                break
-    if not filenames:
+                filenames.append(file)
+                if len(filenames) >= args.last:
+                    break
+    if len(filenames) == 0:
         print("No log files specified")
         exit()
 

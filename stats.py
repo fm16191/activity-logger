@@ -3,6 +3,7 @@ from sys import argv
 import json
 from datetime import datetime
 from datetime import timedelta
+import argparse
 
 from colors import C
 
@@ -158,9 +159,24 @@ def data_by_exe(data, terminal_size_max=None):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Displays logged X11 activity')
+    parser.add_argument('-x', '--exe', action='store', nargs='*', type=int, default=True,
+        # required=False,
+        # metavar='EXE',
+        help='sort logged activities by executable name')
+    parser.add_argument('-w', '--windows', action='store_true', default=True,
+        help='sort logged activities by windows name')
+    parser.add_argument('-s', '--longuest-sessions', action='store_true',
+        help='sort logged activities by longuest time spent on without switching')
+    parser.add_argument('-v', '--verbose', action='store_true', default=0)
+    parser.add_argument('-f', '--file',
+        action='store', nargs='*') # type=argparse.FileType('r')
+
+    args = parser.parse_args()
+
     filename = None
-    if len(argv) > 1:
-        filename = argv[1]
+    if args.file:
+        filename = args.file[0]
     else:
         ll = sorted(os.listdir("."), key=os.path.getmtime, reverse=True)
         for file in ll:
@@ -191,6 +207,9 @@ if __name__ == "__main__":
     print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
     data = add_duration(data)
 
-    longuest_sessions(data, terminal_size_max)
-    data_by_exe(data, terminal_size_max)
-    data_by_activity_name(data, terminal_size_max)
+    if args.longuest_sessions != False:
+        longuest_sessions(data, terminal_size_max)
+    if args.exe != False:
+        data_by_exe(data, terminal_size_max)
+    if args.windows != False:
+        data_by_activity_name(data, terminal_size_max)

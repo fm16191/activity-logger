@@ -14,7 +14,7 @@ To be added :
 - [x] Autorestart if the logger fails (daemon)
 - [x] Adapt the ouput size with the terminal size (displays ... if too long)
 - [x] Detects if file is empty.
-- [ ] Add argument parsing, for each output
+- [x] Add argument parsing, for each output
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
 - [ ] Analyze multiple log files at once

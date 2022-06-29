@@ -132,7 +132,10 @@ def read_files(filenames):
     # print(json.dumps(tdata['data'], indent=2))
 
 def print_time(duration):
-    if duration/3600 > 1:
+    if duration/(3600*24) > 1:
+        # return f"{duration/(3600*24):2.0f}d {duration%(3600*24)/3600:02.0f}h {duration%3600/60:02.0f}m"
+        return f"{duration/(3600*24):3.0f}d {duration%(3600*24)/3600:02.1f}h"
+    elif duration/3600 > 1:
         return f"{duration/3600:4.0f}h {duration%3600/60:02.0f}m"
     else :
         return f"{duration/60:8.1f}m"
@@ -143,15 +146,15 @@ def longuest_sessions(data, terminal_size_max=None):
     print("\n> Longest sessions")
     print(f"{C.BOLD}{C.GREEN}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
     for item in sessions[:10]:
-        # print(f"{item['duration']:5}   {d['total_duration'].seconds/60:8.1f}m\t{name}")
+        # print(f"{item['duration']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         name = item['name']
         if terminal_size_max and len(name) > terminal_size_max - 24 - 1:
             name = name[: terminal_size_max - 24 - 1] + "…"
         exe = item['exe']
         if len(exe) > 8:
             exe = f"{exe[:7]}…"
-        # print(f"{item['duration'].seconds/60:8.1f}m   {exe:8}\t{name}")
-        print(f"{print_time(item['duration'].seconds):10s}   {exe:8}\t{name}")
+        # print(f"{item['duration'].total_seconds()/60:8.1f}m   {exe:8}\t{name}")
+        print(f"{print_time(item['duration'].total_seconds()):10s}   {exe:8}\t{name}")
 
 def data_by_activity_name(data, terminal_size_max=None):
     activities = {}
@@ -175,8 +178,8 @@ def data_by_activity_name(data, terminal_size_max=None):
         (name, d) = item
         if terminal_size_max and len(name) > terminal_size_max - 24 - 1:
             name = name[: terminal_size_max - 24 - 1] + "…"
-        # print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{name}")
-        print(f"{d['occurrences']:5}   {print_time(d['total_duration'].seconds):10s}\t{name}")
+        # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
+        print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{name}")
 
 def data_by_exe(data, terminal_size_max=None):
     exes = {}
@@ -200,8 +203,8 @@ def data_by_exe(data, terminal_size_max=None):
         (exe, d) = item
         if terminal_size_max and len(exe) > terminal_size_max-24-4:
             exe = exe[:terminal_size_max-24-4] + "..."
-        # print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{exe}")
-        print(f"{d['occurrences']:5}   {print_time(d['total_duration'].seconds):10s}\t{exe}")
+        # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{exe}")
+        print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{exe}")
 
 
 

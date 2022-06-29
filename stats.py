@@ -19,7 +19,7 @@ def DERROR(content):
 
 def get_timestamp(line):
     if not " " in line or len(line.split(" ")[0]) != 16 or not "-" in line:
-        DERROR(f"Incorrect timestamp for line {line}")
+        # DERROR(f"Incorrect timestamp for line {line}")
         return False
     else:
         return datetime_from_timestamp(line.split(" ")[0][1:-1])
@@ -30,15 +30,18 @@ def datetime_from_timestamp(str_timestamp):
     return datetime.fromtimestamp(timestamp) + timedelta(microseconds=microseconds)
 
 def read_data(filename):
-    fo = open(filename, "r")
-    foo = fo.readlines()
-    fo.close()
-
     data = {
         'data': [],
         'start': None,
         'end': None
     }
+
+    fo = open(filename, "r")
+    if not fo.readable():
+        DERROR(f"Error : {filename} couldn't be read.")
+        return data
+    foo = fo.readlines()
+    fo.close()
 
     if len(foo) < 4:
         return data
@@ -47,7 +50,7 @@ def read_data(filename):
     data['end'] = get_timestamp(foo[-1])
 
     if not data['start'] or not data['end']:
-        DERROR(f"Logfile {filename} corrupted")
+        DERROR(f"{filename} is not a valid logfile")
         return data
 
     for i, line in enumerate(foo[2:]):
@@ -82,6 +85,51 @@ def add_duration(data):
     data['data'][-1]['duration'] = timedelta(microseconds=0)
     return data
 
+def read_files(filenames):
+    tdata = dict()
+    tdata['start'] = None
+    tdata['end'] = None
+    tdata['data'] = []
+    for filename in filenames:
+        if not os.path.exists(filename):
+            DINFO(f"warning : \"{filename}\" : No such file")
+            continue
+        data = read_data(filename)
+        if not data['data']:
+            continue
+        # with open("test.json", "w") as fo:
+        #     json.dump(data['data'], fo, indent=2)
+        tdata['data'].extend(data['data'])
+
+        # Get last timestamp to indicate it wasn't recording besides that point.
+        last_timestamp = data['data'][-1]['timestamp']
+        ltimestamp_ms = int(last_timestamp[-3:])
+        ltimestamp_s = int(last_timestamp[:-4])
+        if ltimestamp_ms > 0:
+            ltimestamp_ms = ltimestamp_ms + 1
+        else:
+            ltimestamp_ms = 0
+            ltimestamp_s = ltimestamp_s + 1
+
+        tdata['data'].extend([{
+            'timestamp': f"{ltimestamp_s}-{ltimestamp_ms:03d}",
+            'pid': "00000",
+            'exe': "Shutdown",
+            'name': "Shutdown"
+        }])
+
+    if not tdata['data']:
+        DINFO("No data to be analyzed")
+        return tdata
+
+    tt = sorted(tdata['data'], key=lambda sub_data: sub_data['timestamp'])
+    tdata['data'] = tt
+
+    tdata['start'] = datetime_from_timestamp(tdata['data'][0]['timestamp'])
+    tdata['end'] = datetime_from_timestamp(tdata['data'][-1]['timestamp'])
+
+    return tdata
+    # print(json.dumps(tdata['data'], indent=2))
 
 def print_time(duration):
     if duration/3600 > 1:
@@ -160,7 +208,7 @@ def data_by_exe(data, terminal_size_max=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
-    parser.add_argument('-x', '--exe', action='store', nargs='*', type=int, default=True,
+    parser.add_argument('-x', '--exe', action='store', nargs='*', default=True,
         # required=False,
         # metavar='EXE',
         help='sort logged activities by executable name')
@@ -173,19 +221,21 @@ if __name__ == "__main__":
         action='store', nargs='*') # type=argparse.FileType('r')
 
     args = parser.parse_args()
+    if args.verbose:
+        print(args)
 
-    filename = None
+    filenames = None
     if args.file:
-        filename = args.file[0]
-    else:
+        filenames = args.file
+    else: # Get last filename by default
         ll = sorted(os.listdir("."), key=os.path.getmtime, reverse=True)
         for file in ll:
             if file.endswith(".wins"):
-                filename = file
+                filenames = [file]
                 break
-    if not filename:
-        print("No window log file specified")
-        exit
+    if not filenames:
+        print("No log files specified")
+        exit()
 
     terminal_size_max = os.get_terminal_size().columns
     if terminal_size_max < 40:
@@ -196,10 +246,9 @@ if __name__ == "__main__":
 
 
     print("====== X11 Activity logger ======")
-    print(f"Reading {filename} ...\n") # , end="\r"
-    data = read_data(filename)
+    print(f"Reading {', '.join(filenames)} ...\n") # , end="\r"
+    data = read_files(filenames)
     if not data['start']:
-        DERROR('Empty or invalid file')
         exit()
 
     print(f"Started    on   {C.YELLOW}{str(data['start'])[:-7]}{C.END}")

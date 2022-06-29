@@ -35,18 +35,18 @@ def read_data(filename):
 
     data = {
         'data': [],
-        'starting_date_str': None,
-        'ending_date_str': None
+        'start': None,
+        'end': None
     }
 
     if len(foo) < 4:
         return data
 
-    data['starting_date_str'] = get_timestamp(foo[3])
-    data['ending_date_str'] = get_timestamp(foo[-1])
+    data['start'] = get_timestamp(foo[3])
+    data['end'] = get_timestamp(foo[-1])
 
-    if not data['starting_date_str'] or not data['ending_date_str']:
-        DERROR("Logfile corrupted")
+    if not data['start'] or not data['end']:
+        DERROR(f"Logfile {filename} corrupted")
         return data
 
     for i, line in enumerate(foo[2:]):
@@ -60,7 +60,7 @@ def read_data(filename):
         ldata['exe'] = sline[2][1:-1]
         if ldata['exe'] == "Desktop":
             ldata['name'] = "Desktop"
-        else: 
+        else:
             ldata['name'] = " ".join(sline[3:])
         data['data'].append(ldata)
 
@@ -81,9 +81,16 @@ def add_duration(data):
     data['data'][-1]['duration'] = timedelta(microseconds=0)
     return data
 
+
+def print_time(duration):
+    if duration/3600 > 1:
+        return f"{duration/3600:4.0f}h {duration%3600/60:02.0f}m"
+    else :
+        return f"{duration/60:8.1f}m"
+
 def longuest_sessions(data, terminal_size_max=None):
     sessions = sorted(data['data'], key=lambda sub_data:sub_data['duration'], reverse=True)
-    
+
     print("\n> Longest sessions")
     print(f"{C.BOLD}{C.GREEN}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
     for item in sessions[:10]:
@@ -94,7 +101,8 @@ def longuest_sessions(data, terminal_size_max=None):
         exe = item['exe']
         if len(exe) > 8:
             exe = f"{exe[:7]}…"
-        print(f"{item['duration'].seconds/60:8.1f}m   {exe:8}\t{name}")
+        # print(f"{item['duration'].seconds/60:8.1f}m   {exe:8}\t{name}")
+        print(f"{print_time(item['duration'].seconds):10s}   {exe:8}\t{name}")
 
 def data_by_activity_name(data, terminal_size_max=None):
     activities = {}
@@ -108,9 +116,9 @@ def data_by_activity_name(data, terminal_size_max=None):
         else :
             activities[item['name']]['total_duration'] += item['duration']
             activities[item['name']]['occurrences'] += 1
-        
+
     activities_by_duration = sorted(activities.items(), key=lambda sub_data:sub_data[1]['total_duration'], reverse=True)
-    
+
     print("\n> Window names by time spent on")
     print(f"{C.BOLD}{C.GREEN}{'Times':5}{C.YELLOW}{'        Time'}\t{C.CYAN}{'Window Name'}{C.END}\n")
 
@@ -118,7 +126,8 @@ def data_by_activity_name(data, terminal_size_max=None):
         (name, d) = item
         if terminal_size_max and len(name) > terminal_size_max - 24 - 1:
             name = name[: terminal_size_max - 24 - 1] + "…"
-        print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{name}")
+        # print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{name}")
+        print(f"{d['occurrences']:5}   {print_time(d['total_duration'].seconds):10s}\t{name}")
 
 def data_by_exe(data, terminal_size_max=None):
     exes = {}
@@ -132,9 +141,9 @@ def data_by_exe(data, terminal_size_max=None):
         else :
             exes[item['exe']]['total_duration'] += item['duration']
             exes[item['exe']]['occurrences'] += 1
-        
+
     exes_by_duration = sorted(exes.items(), key=lambda sub_data:sub_data[1]['total_duration'], reverse=True)
-    
+
     print("\n> Programs executable by time spent on")
     print(f"{C.BOLD}{C.GREEN}{'Times':5}{C.YELLOW}{'        Time'}\t{C.CYAN}{'Executable'}{C.END}\n")
 
@@ -142,7 +151,8 @@ def data_by_exe(data, terminal_size_max=None):
         (exe, d) = item
         if terminal_size_max and len(exe) > terminal_size_max-24-4:
             exe = exe[:terminal_size_max-24-4] + "..."
-        print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{exe}")
+        # print(f"{d['occurrences']:5}   {d['total_duration'].seconds/60:8.1f}m\t{exe}")
+        print(f"{d['occurrences']:5}   {print_time(d['total_duration'].seconds):10s}\t{exe}")
 
 
 
@@ -157,7 +167,7 @@ if __name__ == "__main__":
             if file.endswith(".wins"):
                 filename = file
                 break
-    if not filename: 
+    if not filename:
         print("No window log file specified")
         exit
 
@@ -172,13 +182,13 @@ if __name__ == "__main__":
     print("====== X11 Activity logger ======")
     print(f"Reading {filename} ...\n") # , end="\r"
     data = read_data(filename)
-    if not data['starting_date_str']:
+    if not data['start']:
         DERROR('Empty or invalid file')
         exit()
 
-    print(f"Started    on   {C.YELLOW}{str(data['starting_date_str'])[:-7]}{C.END}")
-    print(f"Last entry on   {C.YELLOW}{str(data['ending_date_str'])[:-7]}{C.END}")
-    print(f"Total duration  {C.GREEN}{str(data['ending_date_str'] - data['starting_date_str'])[:-7]}{C.END}")
+    print(f"Started    on   {C.YELLOW}{str(data['start'])[:-7]}{C.END}")
+    print(f"Last entry on   {C.YELLOW}{str(data['end'])[:-7]}{C.END}")
+    print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
     data = add_duration(data)
 
     longuest_sessions(data, terminal_size_max)

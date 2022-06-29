@@ -5,7 +5,7 @@
 
 # Features
 
-- Datetime for first and last entry
+- Session duration with first and last entry
 - Sort applications by time spent on them
 - Sort windows names by time spent on them
 - Longuest sessions without window switching
@@ -14,13 +14,15 @@ To be added :
 - [x] Autorestart if the logger fails (daemon)
 - [x] Adapt the ouput size with the terminal size (displays ... if too long)
 - [x] Detects if file is empty.
+- [ ] Add argument parsing, for each output
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
 - [ ] Analyze multiple log files at once
 - [ ] Sort windows names by application name
 - [x] Longests sessions without window switching
 - [ ] Filter activities with keywords
-- [ ] Speficy time in hours, when above 60 minutes
+- [x] Speficy time in hours, when above 60 minutes
+- [ ] Add window name on startup
 - [ ] Add the timestamp of longuests sessions
 - [ ] Ignore window switch if long session interupted by a quick switch
 

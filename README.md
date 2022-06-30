@@ -15,15 +15,19 @@ To be added :
 - [x] Adapt the ouput size with the terminal size (displays ... if too long)
 - [x] Detects if file is empty.
 - [x] Add argument parsing, for each output
+- [x] Longests sessions without window switching
+- [x] Output time in days & hours & minutes according to their duration
+- [x] Analyze multiple log files at once
+- [ ] Add active time (with %)
+- [ ] Support reading last N logfiles by date modification
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
-- [ ] Analyze multiple log files at once
 - [ ] Sort windows names by application name
-- [x] Longests sessions without window switching
 - [ ] Filter activities with keywords
-- [x] Speficy time in hours, when above 60 minutes
 - [ ] Add window name on startup
 - [ ] Add the timestamp of longuests sessions
+- [ ] Read last files by header instead of by date modification (i.e subsequent modification)
+- [ ] Dumping data
 - [ ] Ignore window switch if long session interupted by a quick switch
 
 Ideas - Keylogger feature

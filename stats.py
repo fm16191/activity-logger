@@ -253,13 +253,13 @@ if __name__ == "__main__":
 
     if stdout.isatty():
         stdout_size_max = os.get_terminal_size().columns
+        if stdout_size_max < 40:
+            print(f"{C.ITALIC}Warning : Terminal size {stdout_size_max} too short (at least 40){C.END}")
+            stdout_size_max = None
+            exit()
     else :
-        stdout_size_max = 80
-
-    if stdout_size_max < 40:
-        print(f"{C.ITALIC}Warning : Terminal size {stdout_size_max} too short (at least 40){C.END}")
         stdout_size_max = None
-        exit()
+
 
 
 

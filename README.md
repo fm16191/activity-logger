@@ -18,7 +18,8 @@ To be added :
 - [x] Longests sessions without window switching
 - [x] Output time in days & hours & minutes according to their duration
 - [x] Analyze multiple log files at once
-- [ ] Add active time (with %)
+- [x] Add active time (with %)
+- [ ] Add option to exclude "Desktop" window logs
 - [ ] Support reading last N logfiles by date modification
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process

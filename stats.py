@@ -182,6 +182,21 @@ def data_by_activity_name(data, stdout_size_max=None):
         # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{name}")
 
+def get_active_time(data):
+    exes = {}
+
+    for i, item in enumerate(data['data']):
+        if item['exe'] not in exes:
+            exes[item['exe']] = {
+                'total_duration' : item['duration'],
+                'occurrences' : 1
+                }
+        else :
+            exes[item['exe']]['total_duration'] += item['duration']
+            exes[item['exe']]['occurrences'] += 1
+
+    return exes["Shutdown"]['total_duration']
+
 def data_by_exe(data, stdout_size_max=None):
     exes = {}
 
@@ -264,7 +279,8 @@ if __name__ == "__main__":
 
 
     print("====== X11 Activity logger ======")
-    print(f"Reading {', '.join(filenames)} ...\n") # , end="\r"
+    if args.verbose:
+        print(f"Reading {', '.join(filenames)} ...\n") # , end="\r"
     data = read_files(filenames)
     if not data['start']:
         exit()
@@ -273,6 +289,11 @@ if __name__ == "__main__":
     print(f"Last entry on   {C.YELLOW}{str(data['end'])[:-7]}{C.END}")
     print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
     data = add_duration(data)
+    if len(filenames) > 1:
+        shutdown_time = get_active_time(data)
+        print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
+
+
 
     if args.longuest_sessions != False:
         longuest_sessions(data, stdout_size_max)

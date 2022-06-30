@@ -1,5 +1,5 @@
 import os
-from sys import argv
+from sys import argv, stdout
 import json
 from datetime import datetime
 from datetime import timedelta
@@ -141,7 +141,7 @@ def print_time(duration):
     else :
         return f"{duration/60:8.1f}m"
 
-def longuest_sessions(data, terminal_size_max=None):
+def longuest_sessions(data, stdout_size_max=None):
     sessions = sorted(data['data'], key=lambda sub_data:sub_data['duration'], reverse=True)
 
     print("\n> Longest sessions")
@@ -149,15 +149,15 @@ def longuest_sessions(data, terminal_size_max=None):
     for item in sessions[:10]:
         # print(f"{item['duration']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         name = item['name']
-        if terminal_size_max and len(name) > terminal_size_max - 24 - 1:
-            name = name[: terminal_size_max - 24 - 1] + "…"
+        if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
+            name = name[: stdout_size_max - 24 - 1] + "…"
         exe = item['exe']
         if len(exe) > 8:
             exe = f"{exe[:7]}…"
         # print(f"{item['duration'].total_seconds()/60:8.1f}m   {exe:8}\t{name}")
         print(f"{print_time(item['duration'].total_seconds()):10s}   {exe:8}\t{name}")
 
-def data_by_activity_name(data, terminal_size_max=None):
+def data_by_activity_name(data, stdout_size_max=None):
     activities = {}
 
     for i, item in enumerate(data['data']):
@@ -177,12 +177,12 @@ def data_by_activity_name(data, terminal_size_max=None):
 
     for item in activities_by_duration[:20]:
         (name, d) = item
-        if terminal_size_max and len(name) > terminal_size_max - 24 - 1:
-            name = name[: terminal_size_max - 24 - 1] + "…"
+        if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
+            name = name[: stdout_size_max - 24 - 1] + "…"
         # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{name}")
 
-def data_by_exe(data, terminal_size_max=None):
+def data_by_exe(data, stdout_size_max=None):
     exes = {}
 
     for i, item in enumerate(data['data']):
@@ -202,8 +202,8 @@ def data_by_exe(data, terminal_size_max=None):
 
     for item in exes_by_duration[:20]:
         (exe, d) = item
-        if terminal_size_max and len(exe) > terminal_size_max-24-4:
-            exe = exe[:terminal_size_max-24-4] + "..."
+        if stdout_size_max and len(exe) > stdout_size_max-24-4:
+            exe = exe[:stdout_size_max-24-4] + "..."
         # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{exe}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{exe}")
 
@@ -251,10 +251,14 @@ if __name__ == "__main__":
         print("No log files specified")
         exit()
 
-    terminal_size_max = os.get_terminal_size().columns
-    if terminal_size_max < 40:
-        print(f"{C.ITALIC}Warning : Terminal size {terminal_size_max} too short (40 requested){C.END}")
-        terminal_size_max = None
+    if stdout.isatty():
+        stdout_size_max = os.get_terminal_size().columns
+    else :
+        stdout_size_max = 80
+
+    if stdout_size_max < 40:
+        print(f"{C.ITALIC}Warning : Terminal size {stdout_size_max} too short (at least 40){C.END}")
+        stdout_size_max = None
         exit()
 
 
@@ -271,8 +275,8 @@ if __name__ == "__main__":
     data = add_duration(data)
 
     if args.longuest_sessions != False:
-        longuest_sessions(data, terminal_size_max)
+        longuest_sessions(data, stdout_size_max)
     if args.exe != False:
-        data_by_exe(data, terminal_size_max)
+        data_by_exe(data, stdout_size_max)
     if args.windows != False:
-        data_by_activity_name(data, terminal_size_max)
+        data_by_activity_name(data, stdout_size_max)

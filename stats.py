@@ -222,8 +222,18 @@ def data_by_exe(data, stdout_size_max=None):
         # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{exe}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{exe}")
 
+def exclude(data, exclude, verbose):
+    for item in exclude:
+        if os.path.exists(item):
+            exclude.remove(item)
+            if verbose:
+                DINFO(f"Removing keywords from '{item}'")
+            with open(item, 'r') as fo:
+                foo = fo.readlines()
+                exclude.extend([line.replace('\n','') for line in foo])
 
-
+    data['data'] = list(filter(lambda a: a['exe'] not in exclude, data['data']))
+    return data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
@@ -234,6 +244,10 @@ if __name__ == "__main__":
 
     parser.add_argument('-a', '--all', action='store_true', default=False,
         help='show every sort outputs')
+    parser.add_argument('-e', '--exclude', action='store', nargs='*', default=False,
+        help='exclude keywords from argument or filename')
+    parser.add_argument('--exclude-desktop', action='store_true',
+        help='exclude Desktop from logged activities')
     parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
         # required=False,
         # metavar='EXE',
@@ -295,7 +309,9 @@ if __name__ == "__main__":
         shutdown_time = get_active_time(data)
         print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
-
+    if args.exclude_desktop: args.exclude.append("Desktop")
+    if args.exclude != False:
+        data = exclude(data, args.exclude, args.verbose)
 
     if args.all or args.longuest_sessions != False:
         longuest_sessions(data, stdout_size_max)

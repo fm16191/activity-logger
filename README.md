@@ -20,8 +20,8 @@ To be added :
 - [x] Analyze multiple log files at once
 - [x] Add active time (with %)
 - [x] -a / --all flag
-- [ ] Add keywords exclusion --exclude <file / keywords>
-- [ ] Add option to exclude "Desktop" window logs
+- [x] Add keywords exclusion --exclude <file / keywords>
+- [x] Add option to exclude "Desktop" window logs
 - [ ] Support reading last N logfiles by date modification
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process

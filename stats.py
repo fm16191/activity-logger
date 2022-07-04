@@ -232,6 +232,8 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--last', action='store', nargs='?', metavar="L",
         type=int, default=1, help='Get the N latest(s) log file(s)')
 
+    parser.add_argument('-a', '--all', action='store_true', default=False,
+        help='show every sort outputs')
     parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
         # required=False,
         # metavar='EXE',
@@ -295,9 +297,9 @@ if __name__ == "__main__":
 
 
 
-    if args.longuest_sessions != False:
+    if args.all or args.longuest_sessions != False:
         longuest_sessions(data, stdout_size_max)
-    if args.exe != False:
+    if args.all or args.exe != False:
         data_by_exe(data, stdout_size_max)
-    if args.windows != False:
+    if args.all or args.windows != False:
         data_by_activity_name(data, stdout_size_max)

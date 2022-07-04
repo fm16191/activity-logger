@@ -19,6 +19,8 @@ To be added :
 - [x] Output time in days & hours & minutes according to their duration
 - [x] Analyze multiple log files at once
 - [x] Add active time (with %)
+- [x] -a / --all flag
+- [ ] Add keywords exclusion --exclude <file / keywords>
 - [ ] Add option to exclude "Desktop" window logs
 - [ ] Support reading last N logfiles by date modification
 - [ ] Correct file encoding issue

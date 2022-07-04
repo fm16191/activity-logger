@@ -75,9 +75,7 @@ def add_duration(data):
     for i, item in enumerate(data['data'][1:]):
         end = datetime_from_timestamp(item['timestamp'])
 
-        duration = end - start
-        if duration < timedelta(microseconds=0): duration = - duration
-
+        duration = abs(end - start)
         data['data'][i]['duration'] = duration
         # print(data['data'][i+1])
 

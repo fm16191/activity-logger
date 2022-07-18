@@ -9,6 +9,8 @@
 - Sort applications by time spent on them
 - Sort windows names by time spent on them
 - Longuest sessions without window switching
+- A daemon
+- Analyze multiple log files, filter by keywords
 
 To be added :
 - [x] Autorestart if the logger fails (daemon)
@@ -22,6 +24,8 @@ To be added :
 - [x] -a / --all flag
 - [x] Add keywords exclusion --exclude <file / keywords>
 - [x] Add option to exclude "Desktop" window logs
+- [ ] Change active time for the used activity when using the filter option
+- [ ] Output time in seconds if < to  min
 - [ ] Support reading last N logfiles by date modification
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process

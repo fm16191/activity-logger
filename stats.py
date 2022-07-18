@@ -8,13 +8,10 @@ import argparse
 from colors import C
 
 def DOK(content):
-    # [{datetime.now().strftime('%Y %b.%d %H:%M:%S')}]
     print(f"\033[92m{content}\033[0m")
 def DINFO(content):
-    # [{datetime.now().strftime('%Y %b.%d %H:%M:%S')}]
     print(f"\033[93m{content}\033[0m")
 def DERROR(content):
-    # [{datetime.now().strftime('%Y %b.%d %H:%M:%S')}]
     print(f"\033[91m{content}\033[0m")
 
 def get_timestamp(line):
@@ -235,15 +232,17 @@ def exclude(data, exclude, verbose):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
-    parser.add_argument('-f', '--file',
-        action='store', nargs='*', help='specify files to be read') # type=argparse.FileType('r')
+    parser.add_argument('-i', '--input',
+        action='store', nargs='*', help='specify input files to be read') # type=argparse.FileType('r')
     parser.add_argument('-l', '--last', action='store', nargs='?', metavar="L",
-        type=int, default=1, help='Get the N latest(s) log file(s)')
+        type=int, default=1, help='Get the L latests log files')
 
     parser.add_argument('-a', '--all', action='store_true', default=False,
         help='show every sort outputs')
     parser.add_argument('-e', '--exclude', action='store', nargs='*', default=False,
-        help='exclude keywords from argument or filename')
+        help='exclude keywords from arguments or filename')
+    parser.add_argument('-f', '--filter', action='store', nargs='*', default=False,
+        help='filter only specific keywords from arguments or filename')
     parser.add_argument('--exclude-desktop', action='store_true',
         help='exclude Desktop from logged activities')
     parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
@@ -259,14 +258,14 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.verbose:
-        print(args)
+        DINFO(f"Arguments : {args}")
 
     filenames = []
-    if args.file:
-        filenames = args.file
+    if args.input:
+        filenames = args.input
     else :
         # --last 1 is the default at each program call.
-        if args.last <= 0:
+        if not args.last or args.last <= 0:
             DERROR("--last requires a non null positive integer")
             parser.print_help()
             exit()
@@ -284,7 +283,6 @@ if __name__ == "__main__":
         stdout_size_max = os.get_terminal_size().columns
         if stdout_size_max < 40:
             print(f"{C.ITALIC}Warning : Terminal size {stdout_size_max} too short (at least 40){C.END}")
-            stdout_size_max = None
             exit()
     else :
         stdout_size_max = None
@@ -308,6 +306,30 @@ if __name__ == "__main__":
         print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
     if args.exclude_desktop: args.exclude.append("Desktop")
+    if args.filter != False:
+        if args.verbose:
+            DINFO(f"Filtering {args.filer}")
+        fl = [it.lower() for it in args.filter]
+
+        lss = []
+        for x in data['data']:
+            for item in fl:
+                item = item.lower()
+                if item in x['exe'] or item in x['name']:
+                    lss.append(x)
+                    break
+        data['data'] = lss
+
+        # Other attempts, way slower.
+        # for item in fl:
+        #     ls = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
+        #     lss.extend(i for i in ls if i not in lss)
+        # data['data'] = lss
+
+        # data['data'] = list(filter(lambda x: ([(item in x['exe'].lower() or item in x['name'].lower()) for item in fl]!=[]), data['data']))
+        # for item in fl:
+        #     data['data'] = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
+
     if args.exclude != False:
         data = exclude(data, args.exclude, args.verbose)
 

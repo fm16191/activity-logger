@@ -1,8 +1,9 @@
 #!/bin/sh
 
+path=$(dirname "$(realpath $0)")
+
 start() {
-    # cd "~/activity-logger"
-    ./status & disown
+    "$path"/status & disown
 }
 
 is_running(){
@@ -50,8 +51,9 @@ daemon_kill(){
         echo "No daemon is running"
         exit
     fi
-    for p in ${processes[@]/$$}
+    for p in "${processes[@]/$$}"
     do
+        [ "$p" = "" ] && continue
         kill "$p"
         echo "Killing daemon $p"
     done && printf "\r" || echo "No daemon terminated"
@@ -112,5 +114,5 @@ exit
 
 while true
 do
-    ./status
+    "$path"/status
 done

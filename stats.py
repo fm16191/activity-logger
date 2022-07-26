@@ -227,7 +227,35 @@ def exclude(data, exclude, verbose):
                 foo = fo.readlines()
                 exclude.extend([line.replace('\n','') for line in foo])
 
-    data['data'] = list(filter(lambda a: a['exe'] not in exclude, data['data']))
+    # data['data'] = list(filter(lambda a: a['exe'] not in exclude, data['data']))
+    # Way slower.
+    # to_remove = []
+    # for x in data['data']:
+    #     exe = x['exe'].lower()
+    #     name = x['name'].lower()
+    #     for item in exclude:
+    #         if item in exe or item in name:
+    #             # data['data'].remove(x)
+    #             to_remove.append(x)
+    #             break
+    # for x in to_remove:
+    #     data['data'].remove(x)
+
+    imax = len(data['data'])
+    i = 0
+    while i < imax:
+        x = data['data'][i]
+        exe = x['exe'].lower()
+        name = x['name'].lower()
+        for item in exclude:
+            if item in exe or item in name:
+                # del data['data'][i]
+                data['data'].pop(i)
+                i = i-1
+                imax = imax-1
+                break
+        i = i+1
+
     return data
 
 if __name__ == "__main__":
@@ -331,6 +359,9 @@ if __name__ == "__main__":
         #     data['data'] = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
 
     if args.exclude != False:
+        args.exclude = [item.lower() for item in args.exclude]
+        if args.verbose:
+            DINFO(f"Filtering -{' -'.join(args.exclude)}")
         data = exclude(data, args.exclude, args.verbose)
 
     if args.all or args.longuest_sessions != False:

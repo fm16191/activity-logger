@@ -116,6 +116,10 @@ int main(void) {
     sprintf(fd_filepath, "%s.wins", time_sec);
 
     FILE* fd = fopen(fd_filepath, "w");
+    if (fd == NULL) {
+        printf("File couldn't be opened.\nPlease check folder permissions.\n");
+        goto failure;
+    }
 
     free(fd_filepath);
 
@@ -232,8 +236,10 @@ int main(void) {
             XFree(atom);
         }
     }
+
+    failure:
     printf("closing !\n");
-    fclose(fd);
+    if (fd) fclose(fd);
 
     free(comm);
     free(proc_path);

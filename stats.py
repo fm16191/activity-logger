@@ -271,8 +271,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
     parser.add_argument('-i', '--input',
         action='store', nargs='*', help='specify input files to be read') # type=argparse.FileType('r')
-    parser.add_argument('-l', '--last', action='store', nargs='?', metavar="L",
-        type=int, default=1, help='Get the L latests log files')
+    parser.add_argument('-l', '--last', nargs=1, metavar="L", type=int, default=[1], # Has to be a list ??
+        help='Get the L latests log files')
+    parser.add_argument('--folder', nargs=1, metavar="F", default=["data"],
+        help='Set folder')
 
     parser.add_argument('-a', '--all', action='store_true', default=False,
         help='show every sort outputs')
@@ -298,12 +300,10 @@ if __name__ == "__main__":
     if args.input:
         filenames = args.input
     else :
-        # --last 1 is the default at each program call.
-        if not args.last or args.last <= 0:
-            DERROR("--last requires a non null positive integer")
-            parser.print_help()
-            exit()
-        ll = sorted(os.listdir("."), key=os.path.getmtime, reverse=True)
+        args.last = args.last[0]
+        if args.last < 0: args.last = 1
+        folder = args.folder[0]
+        ll = sorted([os.path.join(folder, file) for file in os.listdir(folder)], key=os.path.getmtime, reverse=True)
         for file in ll:
             if file.endswith(".wins"):
                 filenames.append(file)

@@ -22,15 +22,17 @@ To be added :
 - [x] Analyze multiple log files at once
 - [x] Add active time (with %)
 - [x] -a / --all flag
-- [x] Add keywords exclusion --exclude <file / keywords>
+- [x] Exclude, filter activites by keywords
 - [x] Add option to exclude "Desktop" window logs
+- [ ] Add % per application on total active time
+- [x] Add a folder option for all .wins files
+- [ ] Add openrc script & update README
 - [ ] Change active time for the used activity when using the filter option
-- [ ] Output time in seconds if < to  min
+- [x] Output time in seconds if < to  min
 - [ ] Support reading last N logfiles by date modification
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
 - [ ] Sort windows names by application name
-- [ ] Filter activities with keywords
 - [ ] Add window name on startup
 - [ ] Add the timestamp of longuests sessions
 - [ ] Read last files by header instead of by date modification (i.e subsequent modification)
@@ -63,6 +65,10 @@ Ideas - Keylogger feature
 > Checks if an instance is running and if not start one.
 
 `./status.sh daemon`
+
+> Start the logger in a specific folder. By default, log files will be dumped in current folder, if LOGGER_DIR env variable has not been set.
+
+`LOGGER_DIR=data ./status.sh daemon`
 
 > To stop the daemon
 

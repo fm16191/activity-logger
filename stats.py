@@ -127,12 +127,12 @@ def read_files(filenames):
     # print(json.dumps(tdata['data'], indent=2))
 
 def print_time(duration):
-    if duration/(3600*24) > 1:
-        return f"{duration/(3600*24):3.0f}d {duration%(3600*24)/3600:02.1f}h"
-    elif duration/3600 > 1:
-        return f"{duration/3600:4.0f}h {duration%3600/60:02.0f}m"
+    if duration/(3600*24) > 1.0:
+        return f"{int(duration/(3600*24)):3.0f}d {duration%(3600*24)/3600:3.1f}h"
+    elif duration/3600 > 1.0:
+        return f"{int(duration/3600):4.0f}h {duration%3600/60:02.0f}m"
     elif duration/60 > 1 :
-        return f"{duration/60:8.1f}m"
+        return f"{int(duration/60):8.1f}m"
     else :
         return f"{duration:8.0f}s"
 

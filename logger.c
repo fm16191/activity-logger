@@ -112,8 +112,7 @@ int main(void) {
     FILE* fp;
 
     char *logger_dir = getenv("LOGGER_DIR");
-    printf("%s\n", logger_dir);
-    if (getenv("LOGGER_DIR")) {
+    if (logger_dir) {
         DIR *dir = opendir(logger_dir);
         if (!dir && errno == ENOENT)
             mkdir(logger_dir, 0755);

@@ -33,7 +33,7 @@ def read_data(filename):
         'end': None
     }
 
-    fo = open(filename, "r")
+    fo = open(filename, "r", encoding='unicode_escape')
     if not fo.readable():
         DERROR(f"Error : {filename} couldn't be read.")
         return data
@@ -74,7 +74,6 @@ def add_duration(data):
 
         duration = abs(end - start)
         data['data'][i]['duration'] = duration
-        # print(data['data'][i+1])
 
         start = end
     data['data'][-1]['duration'] = timedelta(microseconds=0)
@@ -129,7 +128,6 @@ def read_files(filenames):
 
 def print_time(duration):
     if duration/(3600*24) > 1:
-        # return f"{duration/(3600*24):2.0f}d {duration%(3600*24)/3600:02.0f}h {duration%3600/60:02.0f}m"
         return f"{duration/(3600*24):3.0f}d {duration%(3600*24)/3600:02.1f}h"
     elif duration/3600 > 1:
         return f"{duration/3600:4.0f}h {duration%3600/60:02.0f}m"
@@ -142,14 +140,12 @@ def longuest_sessions(data, stdout_size_max=None):
     print("\n> Longest sessions")
     print(f"{C.BOLD}{C.GREEN}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
     for item in sessions[:10]:
-        # print(f"{item['duration']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         name = item['name']
         if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
             name = name[: stdout_size_max - 24 - 1] + "…"
         exe = item['exe']
         if len(exe) > 8:
             exe = f"{exe[:7]}…"
-        # print(f"{item['duration'].total_seconds()/60:8.1f}m   {exe:8}\t{name}")
         print(f"{print_time(item['duration'].total_seconds()):10s}   {exe:8}\t{name}")
 
 def data_by_activity_name(data, stdout_size_max=None):
@@ -214,21 +210,47 @@ def data_by_exe(data, stdout_size_max=None):
         (exe, d) = item
         if stdout_size_max and len(exe) > stdout_size_max-24-4:
             exe = exe[:stdout_size_max-24-4] + "..."
-        # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{exe}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{exe}")
 
-def exclude(data, exclude, verbose):
-    for item in exclude:
-        if os.path.exists(item):
-            exclude.remove(item)
-            if verbose:
-                DINFO(f"Removing keywords from '{item}'")
-            with open(item, 'r') as fo:
-                foo = fo.readlines()
-                exclude.extend([line.replace('\n','') for line in foo])
+def filter_data(data, fl, ex):
+    # Filtering keywords
+    if len(fl) >= 1 :
+        lss = []
+        for x in data['data']:
+            for item in fl:
+                item = item.lower()
+                if item in x['exe'] or item in x['name']:
+                    lss.append(x)
+                    break
+        data['data'] = lss
+        # Other attempts, way slower.
+        # for item in fl:
+        #     ls = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
+        #     lss.extend(i for i in ls if i not in lss)
+        # data['data'] = lss
 
+        # data['data'] = list(filter(lambda x: ([(item in x['exe'].lower() or item in x['name'].lower()) for item in fl]!=[]), data['data']))
+        # for item in fl:
+        #     data['data'] = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
+
+    # Excluding keywords
+    imax = len(data['data'])
+    i = 0
+    while i < imax:
+        x = data['data'][i]
+        exe = x['exe'].lower()
+        name = x['name'].lower()
+        for item in ex:
+            if item in exe or item in name:
+                # del data['data'][i]
+                data['data'].pop(i)
+                i = i-1
+                imax = imax-1
+                break
+        i = i + 1
+    # Other attempts, way slower.
     # data['data'] = list(filter(lambda a: a['exe'] not in exclude, data['data']))
-    # Way slower.
+
     # to_remove = []
     # for x in data['data']:
     #     exe = x['exe'].lower()
@@ -241,21 +263,6 @@ def exclude(data, exclude, verbose):
     # for x in to_remove:
     #     data['data'].remove(x)
 
-    imax = len(data['data'])
-    i = 0
-    while i < imax:
-        x = data['data'][i]
-        exe = x['exe'].lower()
-        name = x['name'].lower()
-        for item in exclude:
-            if item in exe or item in name:
-                # del data['data'][i]
-                data['data'].pop(i)
-                i = i-1
-                imax = imax-1
-                break
-        i = i+1
-
     return data
 
 if __name__ == "__main__":
@@ -267,12 +274,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-a', '--all', action='store_true', default=False,
         help='show every sort outputs')
-    parser.add_argument('-e', '--exclude', action='store', nargs='*', default=False,
-        help='exclude keywords from arguments or filename')
-    parser.add_argument('-f', '--filter', action='store', nargs='*', default=False,
-        help='filter only specific keywords from arguments or filename')
-    parser.add_argument('--exclude-desktop', action='store_true',
-        help='exclude Desktop from logged activities')
+    parser.add_argument('-f', '--filter', action='store', nargs='?', default=False,
+        help='filter data. Usage : -f\"[+keyword to filter] [-keyword to exclude]...\"')
     parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
         # required=False,
         # metavar='EXE',
@@ -285,6 +288,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
 
     args = parser.parse_args()
+    # args, unknown = parser.parse_known_args()
     if args.verbose:
         DINFO(f"Arguments : {args}")
 
@@ -312,13 +316,13 @@ if __name__ == "__main__":
         if stdout_size_max < 40:
             print(f"{C.ITALIC}Warning : Terminal size {stdout_size_max} too short (at least 40){C.END}")
             exit()
-    else :
+    else:
         stdout_size_max = None
 
 
 
 
-    print("====== X11 Activity logger ======")
+    print("======= X11 Activity logger =======")
     if args.verbose:
         print(f"Reading {', '.join(filenames)} ...\n") # , end="\r"
     data = read_files(filenames)
@@ -333,36 +337,30 @@ if __name__ == "__main__":
         shutdown_time = get_active_time(data)
         print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
-    if args.exclude_desktop: args.exclude.append("Desktop")
     if args.filter != False:
+        fl = [] # +keyword
+        ex = [] # -keyword
+        for f in args.filter.split(" "):
+            if f[0] == "+":
+                fl.append(f[1:].lower())
+            elif f[0] == "-":
+                ex.append(f[1:].lower())
+        #     else: # File
+        #         if os.path.exists(f):
+        #             if args.verbose:
+        #                 DINFO(f"Reading filter file '{f}' ...")
+        #             fo = open(f, "r")
+        #             for line in fo.readlines():
+        #                 if line[0] == "+":
+        #                     fl.append(line[1:-1].lower())
+        #                 elif line[0] == "-":
+        #                     ex.append(line[1:-1].lower())
+        #         else:
+        #             DINFO(f"File {f} cannot be found")
         if args.verbose:
-            DINFO(f"Filtering {args.filer}")
-        fl = [it.lower() for it in args.filter]
+            DINFO(f"Filtering{' '.join([f'+{f}' for f in fl])} {' '.join([f'-{e}' for e in ex])}")
 
-        lss = []
-        for x in data['data']:
-            for item in fl:
-                item = item.lower()
-                if item in x['exe'] or item in x['name']:
-                    lss.append(x)
-                    break
-        data['data'] = lss
-
-        # Other attempts, way slower.
-        # for item in fl:
-        #     ls = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
-        #     lss.extend(i for i in ls if i not in lss)
-        # data['data'] = lss
-
-        # data['data'] = list(filter(lambda x: ([(item in x['exe'].lower() or item in x['name'].lower()) for item in fl]!=[]), data['data']))
-        # for item in fl:
-        #     data['data'] = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
-
-    if args.exclude != False:
-        args.exclude = [item.lower() for item in args.exclude]
-        if args.verbose:
-            DINFO(f"Filtering -{' -'.join(args.exclude)}")
-        data = exclude(data, args.exclude, args.verbose)
+        data = filter_data(data, fl, ex)
 
     if args.all or args.longuest_sessions != False:
         longuest_sessions(data, stdout_size_max)

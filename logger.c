@@ -1,13 +1,15 @@
+#include <dirent.h>
+#include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/stat.h>
 #include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <X11/Xlib.h>
-
-
-#include <signal.h>
 
 #define BUFFER_LEN 1000
 
@@ -89,7 +91,6 @@ int main(void) {
     struct tm* tm = localtime(&t);
 
     char* start_time = asctime(tm);
-    printf("Starting at %s\n", start_time);
 
     char time_sec[12];
     struct timeval time_milisec;
@@ -110,6 +111,17 @@ int main(void) {
     long pid = 0;
     FILE* fp;
 
+    char *logger_dir = getenv("LOGGER_DIR");
+    printf("%s\n", logger_dir);
+    if (getenv("LOGGER_DIR")) {
+        DIR *dir = opendir(logger_dir);
+        if (!dir && errno == ENOENT)
+            mkdir(logger_dir, 0755);
+        else closedir(dir);
+        if (chdir(logger_dir))
+            return printf("Folder %s cannot be accessed\n", logger_dir), 0;
+    }
+
     char* fd_filepath = malloc(sizeof(char) * BUFFER_LEN);
 
     strftime(time_sec, BUFFER_LEN, "%d-%m-%Y_%Hh%Mm%S", tm);
@@ -123,6 +135,7 @@ int main(void) {
 
     free(fd_filepath);
 
+    printf("Starting at %s\n", start_time);
     fprintf(fd, "Starting at %s\n", start_time);
 
     signal(SIGINT, SIGINT_handler);

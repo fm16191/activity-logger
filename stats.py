@@ -33,7 +33,7 @@ def read_data(filename):
         'end': None
     }
 
-    fo = open(filename, "r", encoding='unicode_escape')
+    fo = open(filename, "r")
     if not fo.readable():
         DERROR(f"Error : {filename} couldn't be read.")
         return data
@@ -131,8 +131,10 @@ def print_time(duration):
         return f"{duration/(3600*24):3.0f}d {duration%(3600*24)/3600:02.1f}h"
     elif duration/3600 > 1:
         return f"{duration/3600:4.0f}h {duration%3600/60:02.0f}m"
-    else :
+    elif duration/60 > 1 :
         return f"{duration/60:8.1f}m"
+    else :
+        return f"{duration:8.0f}s"
 
 def longuest_sessions(data, stdout_size_max=None):
     sessions = sorted(data['data'], key=lambda sub_data:sub_data['duration'], reverse=True)

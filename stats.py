@@ -136,8 +136,14 @@ def print_time(duration):
     else :
         return f"{duration:8.0f}s"
 
-def longuest_sessions(data, stdout_size_max=None):
+def longuest_sessions(data, json_dump=None, stdout_size_max=None):
     sessions = sorted(data['data'], key=lambda sub_data:sub_data['duration'], reverse=True)
+    if json_dump :
+        for i in range(len(sessions[:10])):
+            # sessions[i]['timstamp2'] = float(sessions[i]['timestamp'].replace("-","."))
+            sessions[i]['duration'] = sessions[i]['duration'].total_seconds()
+        print(json.dumps(sessions[:10], ensure_ascii=False))
+        return
 
     print("\n> Longest sessions")
     print(f"{C.BOLD}{C.GREEN}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
@@ -150,7 +156,7 @@ def longuest_sessions(data, stdout_size_max=None):
             exe = f"{exe[:7]}…"
         print(f"{print_time(item['duration'].total_seconds()):10s}   {exe:8}\t{name}")
 
-def data_by_activity_name(data, stdout_size_max=None):
+def data_by_activity_name(data, json_dump=None, stdout_size_max=None):
     activities = {}
 
     for i, item in enumerate(data['data']):
@@ -190,7 +196,7 @@ def get_active_time(data):
 
     return exes["Shutdown"]['total_duration']
 
-def data_by_exe(data, stdout_size_max=None):
+def data_by_exe(data, json_dump=None, stdout_size_max=None):
     exes = {}
 
     for i, item in enumerate(data['data']):
@@ -288,12 +294,14 @@ if __name__ == "__main__":
         help='sort logged activities by windows name')
     parser.add_argument('-s', '--longuest-sessions', action='store_true',
         help='sort logged activities by longuest time spent on without switching')
+    parser.add_argument('--json', action='store_true', default=False,
+        help='display in JSON format')
 
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
 
     args = parser.parse_args()
     # args, unknown = parser.parse_known_args()
-    if args.verbose:
+    if not args.json and args.verbose:
         DINFO(f"Arguments : {args}")
 
     filenames = []
@@ -324,20 +332,23 @@ if __name__ == "__main__":
 
 
 
-    print("======= X11 Activity logger =======")
-    if args.verbose:
+    if not args.json:
+        print("======= X11 Activity logger =======")
+    if not args.json and args.verbose:
         print(f"Reading {', '.join(filenames)} ...\n") # , end="\r"
     data = read_files(filenames)
     if not data['start']:
         exit()
 
-    print(f"Started    on   {C.YELLOW}{str(data['start'])[:-7]}{C.END}")
-    print(f"Last entry on   {C.YELLOW}{str(data['end'])[:-7]}{C.END}")
-    print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
+    if not args.json:
+        print(f"Started    on   {C.YELLOW}{str(data['start'])[:-7]}{C.END}")
+        print(f"Last entry on   {C.YELLOW}{str(data['end'])[:-7]}{C.END}")
+        print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
     data = add_duration(data)
     if len(filenames) > 1:
         shutdown_time = get_active_time(data)
-        print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
+        if not args.json:
+            print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
     if args.filter != False:
         fl = [] # +keyword
@@ -359,14 +370,14 @@ if __name__ == "__main__":
         #                     ex.append(line[1:-1].lower())
         #         else:
         #             DINFO(f"File {f} cannot be found")
-        if args.verbose:
+        if not args.json and args.verbose:
             DINFO(f"Filtering{' '.join([f'+{f}' for f in fl])} {' '.join([f'-{e}' for e in ex])}")
 
         data = filter_data(data, fl, ex)
 
     if args.all or args.longuest_sessions != False:
-        longuest_sessions(data, stdout_size_max)
+        longuest_sessions(data, args.json, stdout_size_max)
     if args.all or args.exe != False:
-        data_by_exe(data, stdout_size_max)
+        data_by_exe(data, args.json, stdout_size_max)
     if args.all or args.windows != False:
-        data_by_activity_name(data, stdout_size_max)
+        data_by_activity_name(data, args.json, stdout_size_max)

@@ -76,7 +76,8 @@ def add_duration(data):
         data['data'][i]['duration'] = duration
 
         start = end
-    data['data'][-1]['duration'] = timedelta(microseconds=0)
+    end = datetime.now()
+    data['data'][-1]['duration'] = abs(end - start)
     return data
 
 def read_files(filenames):

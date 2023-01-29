@@ -14,6 +14,7 @@ def DINFO(content):
 def DERROR(content):
     print(f"\033[91m{content}\033[0m")
 
+
 def get_timestamp(line):
     if not " " in line or len(line.split(" ")[0]) != 16 or not "-" in line:
         # DERROR(f"Incorrect timestamp for line {line}")
@@ -21,10 +22,12 @@ def get_timestamp(line):
     else:
         return datetime_from_timestamp(line.split(" ")[0][1:-1])
 
+
 def datetime_from_timestamp(str_timestamp):
     timestamp = int(str_timestamp[:-4])
-    microseconds = int(str_timestamp[-3:])*1000
+    microseconds = int(str_timestamp[-3:]) * 1000
     return datetime.fromtimestamp(timestamp) + timedelta(microseconds=microseconds)
+
 
 def read_data(filename):
     data = {
@@ -51,8 +54,8 @@ def read_data(filename):
         return data
 
     for i, line in enumerate(foo[2:]):
-        line = line.replace("\n","")
-        sline = line.split(" ")
+        line = line.replace('\n', '')
+        sline = line.split(' ')
 
         ldata = {}
 
@@ -62,10 +65,11 @@ def read_data(filename):
         if ldata['exe'] == "Desktop":
             ldata['name'] = "Desktop"
         else:
-            ldata['name'] = " ".join(sline[3:])
+            ldata['name'] = ' '.join(sline[3:])
         data['data'].append(ldata)
 
     return data
+
 
 def add_duration(data, last_entry_date):
     start = datetime_from_timestamp(data['data'][0]['timestamp'])
@@ -78,6 +82,7 @@ def add_duration(data, last_entry_date):
         start = end
     data['data'][-1]['duration'] = abs(last_entry_date - start)
     return data
+
 
 def read_files(filenames):
     tdata = dict()
@@ -98,16 +103,16 @@ def read_files(filenames):
         # Get last timestamp to indicate it wasn't recording besides that point.
         if len(filenames) != 1:
             last_timestamp = data['data'][-1]['timestamp']
-            ltimestamp_ms = int(last_timestamp[-3:])
-            ltimestamp_s = int(last_timestamp[:-4])
-            if ltimestamp_ms > 0:
-                ltimestamp_ms = ltimestamp_ms + 1
+            last_timestamp_ms = int(last_timestamp[-3:])
+            last_timestamp_s = int(last_timestamp[:-4])
+            if last_timestamp_ms > 0:
+                last_timestamp_ms = last_timestamp_ms + 1
             else:
-                ltimestamp_ms = 0
-                ltimestamp_s = ltimestamp_s + 1
+                last_timestamp_ms = 0
+                last_timestamp_s = last_timestamp_s + 1
 
             tdata['data'].extend([{
-                'timestamp': f"{ltimestamp_s}-{ltimestamp_ms:03d}",
+                'timestamp': f"{last_timestamp_s}-{last_timestamp_ms:03d}",
                 'pid': "00000",
                 'exe': "Shutdown",
                 'name': "Shutdown"
@@ -126,6 +131,7 @@ def read_files(filenames):
     return tdata
     # print(json.dumps(tdata['data'], indent=2))
 
+
 def print_time(duration):
     if duration/(3600*24) > 1.0:
         return f"{int(duration/(3600*24)):3.0f}d {duration%(3600*24)/3600:3.1f}h"
@@ -136,9 +142,10 @@ def print_time(duration):
     else :
         return f"{duration:8.0f}s"
 
+
 def longuest_sessions(data, json_dump=None, stdout_size_max=None):
-    sessions = sorted(data['data'], key=lambda sub_data:sub_data['duration'], reverse=True)
-    if json_dump :
+    sessions = sorted(data['data'], key=lambda sub_data: sub_data['duration'], reverse=True)
+    if json_dump:
         for i in range(len(sessions[:10])):
             # sessions[i]['timstamp2'] = float(sessions[i]['timestamp'].replace("-","."))
             sessions[i]['duration'] = sessions[i]['duration'].total_seconds()
@@ -150,7 +157,7 @@ def longuest_sessions(data, json_dump=None, stdout_size_max=None):
     for item in sessions[:10]:
         name = item['name']
         if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
-            name = name[: stdout_size_max - 24 - 1] + "…"
+            name = name[:stdout_size_max - 24 - 1] + "…"
         exe = item['exe']
         if len(exe) > 8:
             exe = f"{exe[:7]}…"
@@ -162,7 +169,7 @@ def history(data, max_print=None, json_dump=None, stdout_size_max=None):
         max_print = len(data['data'])
 
     print("\n> Sessions history by latest")
-    print(f"{C.BOLD}{C.GREEN}{' Date':8}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
+    print(f"{C.BOLD}{C.GREEN}{' Date':9}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
 
     for item in data['data'][::-1][:max_print]:
         name = item['name']
@@ -174,20 +181,21 @@ def history(data, max_print=None, json_dump=None, stdout_size_max=None):
         date = datetime_from_timestamp(item['timestamp']).strftime("%H:%M:%S") # %d/%m/%y
         print(f"{date}{print_time(item['duration'].total_seconds()):10s}   {exe:8}\t{name}")
 
+
 def data_by_activity_name(data, json_dump=None, stdout_size_max=None):
     activities = {}
 
-    for i, item in enumerate(data['data']):
+    for item in data['data']:
         if item['name'] not in activities:
             activities[item['name']] = {
                 'total_duration' : item['duration'],
                 'occurrences' : 1
                 }
-        else :
+        else:
             activities[item['name']]['total_duration'] += item['duration']
             activities[item['name']]['occurrences'] += 1
 
-    activities_by_duration = sorted(activities.items(), key=lambda sub_data:sub_data[1]['total_duration'], reverse=True)
+    activities_by_duration = sorted(activities.items(), key=lambda sub_data: sub_data[1]['total_duration'], reverse=True)
 
     print("\n> Window names by time spent on")
     print(f"{C.BOLD}{C.GREEN}{'Times':5}{C.YELLOW}{'        Time'}\t{C.CYAN}{'Window Name'}{C.END}\n")
@@ -195,14 +203,15 @@ def data_by_activity_name(data, json_dump=None, stdout_size_max=None):
     for item in activities_by_duration[:20]:
         (name, d) = item
         if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
-            name = name[: stdout_size_max - 24 - 1] + "…"
+            name = name[:stdout_size_max - 24 - 1] + "…"
         # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{name}")
+
 
 def get_active_time(data):
     exes = {}
 
-    for i, item in enumerate(data['data']):
+    for item in data['data']:
         if item['exe'] not in exes:
             exes[item['exe']] = {
                 'total_duration' : item['duration'],
@@ -214,10 +223,11 @@ def get_active_time(data):
 
     return exes["Shutdown"]['total_duration']
 
+
 def data_by_exe(data, json_dump=None, stdout_size_max=None):
     exes = {}
 
-    for i, item in enumerate(data['data']):
+    for item in data['data']:
         if item['exe'] not in exes:
             exes[item['exe']] = {
                 'total_duration' : item['duration'],
@@ -238,9 +248,10 @@ def data_by_exe(data, json_dump=None, stdout_size_max=None):
             exe = exe[:stdout_size_max-24-4] + "..."
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{exe}")
 
+
 def filter_data(data, fl, ex):
     # Filtering keywords
-    if len(fl) >= 1 :
+    if len(fl) >= 1:
         lss = []
         for x in data['data']:
             for item in fl:
@@ -270,8 +281,8 @@ def filter_data(data, fl, ex):
             if item in exe or item in name:
                 # del data['data'][i]
                 data['data'].pop(i)
-                i = i-1
-                imax = imax-1
+                i = i - 1
+                imax = imax - 1
                 break
         i = i + 1
     # Other attempts, way slower.
@@ -290,6 +301,7 @@ def filter_data(data, fl, ex):
     #     data['data'].remove(x)
 
     return data
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
@@ -327,7 +339,7 @@ if __name__ == "__main__":
     filenames = []
     if args.input:
         filenames = args.input
-    else :
+    else:
         args.last = args.last[0]
         if args.last < 0: args.last = 1
         folder = args.folder[0]
@@ -361,9 +373,9 @@ if __name__ == "__main__":
         exit()
 
     if not args.json:
-        print(f"Started    on   {C.YELLOW}{str(data['start'])[:-7]}{C.END}")
-        print(f"Last entry on   {C.YELLOW}{str(data['end'])[:-7]}{C.END}")
-        print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
+        print(f"Started    on   {C.YELLOW}{str(data['start']).split('.')[0]}{C.END}")
+        print(f"Last entry on   {C.YELLOW}{str(data['end']).split('.')[0]}{C.END}")
+        print(f"Total duration  {C.GREEN}{str(data['end'] - data['start']).split('.')[0]}{C.END}")
     data = add_duration(data, data['end'])
     if len(filenames) > 1:
         shutdown_time = get_active_time(data)
@@ -402,5 +414,5 @@ if __name__ == "__main__":
         data_by_exe(data, args.json, stdout_size_max)
     if args.all or args.windows != False:
         data_by_activity_name(data, args.json, stdout_size_max)
-    if args.all or args.history != [0]:
+    if args.history != [0]:
         history(data, args.history, args.json, stdout_size_max)

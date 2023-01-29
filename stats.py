@@ -67,7 +67,7 @@ def read_data(filename):
 
     return data
 
-def add_duration(data):
+def add_duration(data, last_entry_date):
     start = datetime_from_timestamp(data['data'][0]['timestamp'])
     for i, item in enumerate(data['data'][1:]):
         end = datetime_from_timestamp(item['timestamp'])
@@ -76,8 +76,7 @@ def add_duration(data):
         data['data'][i]['duration'] = duration
 
         start = end
-    end = datetime.now()
-    data['data'][-1]['duration'] = abs(end - start)
+    data['data'][-1]['duration'] = abs(last_entry_date - start)
     return data
 
 def read_files(filenames):
@@ -365,11 +364,12 @@ if __name__ == "__main__":
         print(f"Started    on   {C.YELLOW}{str(data['start'])[:-7]}{C.END}")
         print(f"Last entry on   {C.YELLOW}{str(data['end'])[:-7]}{C.END}")
         print(f"Total duration  {C.GREEN}{str(data['end'] - data['start'])[:-7]}{C.END}")
-    data = add_duration(data)
+    data = add_duration(data, data['end'])
     if len(filenames) > 1:
         shutdown_time = get_active_time(data)
+        active_time = (data['end'] - data['start'] - shutdown_time)
         if not args.json:
-            print(f"Active time     {C.GREEN}{str(shutdown_time)[:-7]} {C.RED}[{shutdown_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
+            print(f"Active time     {C.GREEN}{str(active_time)[:-7]} {C.RED}[{active_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
     if args.filter != False:
         fl = [] # +keyword

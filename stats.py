@@ -36,7 +36,7 @@ def read_data(filename):
         'end': None
     }
 
-    fo = open(filename, "r")
+    fo = open(filename, "r", errors='ignore')
     if not fo.readable():
         DERROR(f"Error : {filename} couldn't be read.")
         return data
@@ -53,7 +53,7 @@ def read_data(filename):
         DERROR(f"{filename} is not a valid logfile")
         return data
 
-    for i, line in enumerate(foo[2:]):
+    for line in foo[2:]:
         line = line.replace('\n', '')
         sline = line.split(' ')
 
@@ -84,7 +84,7 @@ def add_duration(data, last_entry_date):
     return data
 
 
-def read_files(filenames):
+def read_files(filenames, verbose):
     tdata = dict()
     tdata['start'] = None
     tdata['end'] = None
@@ -93,6 +93,9 @@ def read_files(filenames):
         if not os.path.exists(filename):
             DINFO(f"warning : \"{filename}\" : No such file")
             continue
+
+        if verbose:
+            DINFO(f"Reading {filename}")
         data = read_data(filename)
         if not data['data']:
             continue
@@ -367,8 +370,8 @@ if __name__ == "__main__":
     if not args.json:
         print("======= X11 Activity logger =======")
     if not args.json and args.verbose:
-        print(f"Reading {', '.join(filenames)} ...\n") # , end="\r"
-    data = read_files(filenames)
+        DINFO(len(filenames))
+    data = read_files(filenames, args.verbose)
     if not data['start']:
         exit()
 

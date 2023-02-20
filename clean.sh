@@ -48,12 +48,12 @@ for it in $(seq 0 1 $((count-1))); do
     m=$((dur/60%60))
     s=$((dur%60))
 
-    printf -v contents[${#contents[@]}] "%dh%dm%ds | $(date -d "@${timestamps[$it]}") [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null
+    printf -v contents[${#contents[@]}] "%dh%02dm%02ds | $(date -d "@${timestamps[$it]}" --rfc-3339=seconds | sed 's/+.*//g') [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null
 done
 # echo "${contents[@]}"
 # py stats.py -i 15-10-2022_14h46m14.wins -s --json | jq 'to_entries[0] | (.value.timestamp)|=(split("-")|join(".")|tonumber) | .value.duration'
 
-cmd=(dialog --keep-tite --separate-output --checklist "Select options:" 22 76 16)
+cmd=(dialog --keep-tite --separate-output --checklist "Select options:" 16 120 8)
 # for _ in (seq ${#pids[@]})
 options=(
     0 "${contents[0]}" off

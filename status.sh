@@ -1,9 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 path=$(dirname "$(realpath $0)")
 
 start() {
-    "$path"/status & disown
+    cd "$path" && "$path"/status & disown
 }
 
 is_running(){
@@ -61,7 +61,7 @@ daemon_kill(){
 }
 
 print_help(){
-  echo "Usage : $0 [status | start | stop | restart | daemon | kill]"
+    echo "Usage : $0 [status | start | stop | restart | daemon | kill]"
 }
 
 if  ! pgrep -x "Xorg" >/dev/null;

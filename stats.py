@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-a', '--all', action='store_true', default=False,
         help='show every sort outputs')
-    parser.add_argument('-f', '--filter', action='store', nargs='?', default=False,
+    parser.add_argument('-f', '--filter', action='append', type=str, default=[],
         help='filter data. Usage : -f\"[+keyword to filter] [-keyword to exclude]...\"')
     parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
         # required=False,
@@ -394,13 +394,14 @@ if __name__ == "__main__":
         if not args.json:
             print(f"Active time     {C.GREEN}{str(active_time)[:-7]} {C.RED}[{active_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
-    if args.filter != False:
+    if args.filter:
+        args.filter = " ".join(args.filter)
         fl = [] # +keyword
         ex = [] # -keyword
         for f in args.filter.split(" "):
             if f[0] == "+":
                 fl.append(f[1:].lower())
-            elif f[0] == "-":
+            elif f[0] == "_":
                 ex.append(f[1:].lower())
         #     else: # File
         #         if os.path.exists(f):

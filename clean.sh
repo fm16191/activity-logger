@@ -25,7 +25,7 @@ output=$(python3 stats.py -i "$file" -s --json)
 # exit
 
 IFS=" " read -ra durations <<< "$(echo "$output" | jq '.[].duration' | xargs)"
-IFS=" " read -ra timestamps <<< "$(echo "$output" | jq '.[].timestamp|=(split("-")|join(".")|tonumber) | .[].timestamp' | xargs)"
+IFS=" " read -ra timestamps <<< "$(echo "$output" | jq '.[].timestamp|=(split("-")|join(".")) | .[].timestamp' | xargs)" # tonumber removes last digit if 0
 # IFS=$'\r\n' read -ra names <<< "$(echo "$output" | jq '.[].name')"
 IFS=$'\n' read -d '' -r -a names <<< "$(echo "$output" | jq '.[].name')"
 IFS=" " read -ra pids <<< "$(echo "$output" | jq '.[].pid' | xargs)"
@@ -43,10 +43,10 @@ for it in $(seq 0 1 $((count-1))); do
     # echo "${names[$it]}"
     dur=${durations[$it]}
     dur=$(bc -l <<< "$dur")
-    printf -v dur "%.0d" "$dur"
+    printf -v dur "%.0d" $dur
     h=$((dur/3600))
     m=$((dur/60%60))
-    s=$((dur - dur/60))
+    s=$((dur%60))
 
     printf -v contents[${#contents[@]}] "%dh%dm%ds | $(date -d "@${timestamps[$it]}") [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null
 done

@@ -29,7 +29,7 @@ To be added :
 - [ ] Add openrc script & update README
 - [ ] Change active time for the used activity when using the filter option
 - [x] Output time in seconds if < to  min
-- [ ] Support reading last N logfiles by date modification
+- [x] Support reading last N logfiles by first entry
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
 - [ ] Sort windows names by application name

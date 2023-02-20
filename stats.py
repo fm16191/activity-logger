@@ -305,6 +305,16 @@ def filter_data(data, fl, ex):
 
     return data
 
+def sort_files(filename):
+    fo = open(filename, "r", errors='ignore')
+    if not fo.readable():
+        return None
+    foo = fo.readlines()
+    fo.close()
+    try:
+        return foo[3].split(' ')[0][1:-5]
+    except:
+        return None
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
@@ -346,12 +356,10 @@ if __name__ == "__main__":
         args.last = args.last[0]
         if args.last < 0: args.last = 1
         folder = args.folder[0]
-        ll = sorted([os.path.join(folder, file) for file in os.listdir(folder)], key=os.path.getmtime, reverse=True)
-        for file in ll:
-            if file.endswith(".wins"):
-                filenames.append(file)
-                if len(filenames) >= args.last:
-                    break
+
+        ll = sorted([os.path.join(folder, file) for file in os.listdir(folder) if file.endswith(".wins")], key=lambda x: sort_files(x), reverse=True)
+        filenames = ll[:args.last] if args.last else ll
+
     if len(filenames) == 0:
         print("No log files specified")
         exit()

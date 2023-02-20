@@ -97,8 +97,6 @@ def read_files(filenames, verbose):
         data = read_data(filename, verbose)
         if not data['data']:
             continue
-        # with open("test.json", "w") as fo:
-        #     json.dump(data['data'], fo, indent=2)
         tdata['data'].extend(data['data'])
 
         # Get last timestamp to indicate it wasn't recording besides that point.
@@ -116,8 +114,8 @@ def read_files(filenames, verbose):
                 'timestamp': f"{last_timestamp_s}-{last_timestamp_ms:03d}",
                 'pid': "00000",
                 'exe': "Shutdown",
-                'name': "Shutdown"
-            }])
+                'name': "Shutdown",
+                }])
 
     if not tdata['data']:
         DINFO("No data to be analyzed")
@@ -130,17 +128,16 @@ def read_files(filenames, verbose):
     tdata['end'] = datetime_from_timestamp(tdata['data'][-1]['timestamp'])
 
     return tdata
-    # print(json.dumps(tdata['data'], indent=2))
 
 
 def print_time(duration):
-    if duration/(3600*24) > 1.0:
+    if duration / (3600*24) > 1.0:
         return f"{int(duration/(3600*24)):3.0f}d {duration%(3600*24)/3600:3.1f}h"
-    elif duration/3600 > 1.0:
+    elif duration / 3600 > 1.0:
         return f"{int(duration/3600):4.0f}h {duration%3600/60:02.0f}m"
-    elif duration/60 > 1 :
+    elif duration / 60 > 1:
         return f"{int(duration/60):8.1f}m"
-    else :
+    else:
         return f"{duration:8.0f}s"
 
 
@@ -189,8 +186,8 @@ def data_by_activity_name(data, json_dump=None, stdout_size_max=None):
     for item in data['data']:
         if item['name'] not in activities:
             activities[item['name']] = {
-                'total_duration' : item['duration'],
-                'occurrences' : 1
+                'total_duration': item['duration'],
+                'occurrences': 1,
                 }
         else:
             activities[item['name']]['total_duration'] += item['duration']
@@ -205,7 +202,6 @@ def data_by_activity_name(data, json_dump=None, stdout_size_max=None):
         (name, d) = item
         if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
             name = name[:stdout_size_max - 24 - 1] + "…"
-        # print(f"{d['occurrences']:5}   {d['total_duration'].total_seconds()/60:8.1f}m\t{name}")
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{name}")
 
 
@@ -215,8 +211,8 @@ def get_active_time(data):
     for item in data['data']:
         if item['exe'] not in exes:
             exes[item['exe']] = {
-                'total_duration' : item['duration'],
-                'occurrences' : 1
+                'total_duration': item['duration'],
+                'occurrences': 1,
                 }
         else :
             exes[item['exe']]['total_duration'] += item['duration']
@@ -231,22 +227,22 @@ def data_by_exe(data, json_dump=None, stdout_size_max=None):
     for item in data['data']:
         if item['exe'] not in exes:
             exes[item['exe']] = {
-                'total_duration' : item['duration'],
-                'occurrences' : 1
+                'total_duration': item['duration'],
+                'occurrences': 1,
                 }
-        else :
+        else:
             exes[item['exe']]['total_duration'] += item['duration']
             exes[item['exe']]['occurrences'] += 1
 
-    exes_by_duration = sorted(exes.items(), key=lambda sub_data:sub_data[1]['total_duration'], reverse=True)
+    exes_by_duration = sorted(exes.items(), key=lambda sub_data: sub_data[1]['total_duration'], reverse=True)
 
     print("\n> Programs executable by time spent on")
     print(f"{C.BOLD}{C.GREEN}{'Times':5}{C.YELLOW}{'        Time'}\t{C.CYAN}{'Executable'}{C.END}\n")
 
     for item in exes_by_duration[:20]:
         (exe, d) = item
-        if stdout_size_max and len(exe) > stdout_size_max-24-4:
-            exe = exe[:stdout_size_max-24-4] + "..."
+        if stdout_size_max and len(exe) > stdout_size_max - 24 - 4:
+            exe = exe[:stdout_size_max - 24 - 4] + "..."
         print(f"{d['occurrences']:5}   {print_time(d['total_duration'].total_seconds()):10s}\t{exe}")
 
 
@@ -261,15 +257,6 @@ def filter_data(data, fl, ex):
                     lss.append(x)
                     break
         data['data'] = lss
-        # Other attempts, way slower.
-        # for item in fl:
-        #     ls = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
-        #     lss.extend(i for i in ls if i not in lss)
-        # data['data'] = lss
-
-        # data['data'] = list(filter(lambda x: ([(item in x['exe'].lower() or item in x['name'].lower()) for item in fl]!=[]), data['data']))
-        # for item in fl:
-        #     data['data'] = list(filter(lambda x: (item in x['exe'].lower() or item in x['name'].lower()), data['data']))
 
     # Excluding keywords
     imax = len(data['data'])
@@ -286,21 +273,6 @@ def filter_data(data, fl, ex):
                 imax = imax - 1
                 break
         i = i + 1
-    # Other attempts, way slower.
-    # data['data'] = list(filter(lambda a: a['exe'] not in exclude, data['data']))
-
-    # to_remove = []
-    # for x in data['data']:
-    #     exe = x['exe'].lower()
-    #     name = x['name'].lower()
-    #     for item in exclude:
-    #         if item in exe or item in name:
-    #             # data['data'].remove(x)
-    #             to_remove.append(x)
-    #             break
-    # for x in to_remove:
-    #     data['data'].remove(x)
-
     return data
 
 def sort_files(filename):
@@ -370,9 +342,6 @@ if __name__ == "__main__":
     else:
         stdout_size_max = None
 
-
-
-
     if not args.json:
         print("======= X11 Activity logger =======")
     if not args.json and args.verbose:
@@ -392,6 +361,10 @@ if __name__ == "__main__":
         if not args.json:
             print(f"Active time     {C.GREEN}{str(active_time)[:-7]} {C.RED}[{active_time/(data['end'] - data['start'])*100:2.1f}%]{C.END}")
 
+        if args.verbose and not args.json:
+            print(f"Files           {len(filenames)}")
+            print(f"Entries         {len(data['data'])}")
+
     if args.filter:
         args.filter = " ".join(args.filter)
         fl = [] # +keyword
@@ -401,18 +374,7 @@ if __name__ == "__main__":
                 fl.append(f[1:].lower())
             elif f[0] == "_":
                 ex.append(f[1:].lower())
-        #     else: # File
-        #         if os.path.exists(f):
-        #             if args.verbose:
-        #                 DINFO(f"Reading filter file '{f}' ...")
-        #             fo = open(f, "r")
-        #             for line in fo.readlines():
-        #                 if line[0] == "+":
-        #                     fl.append(line[1:-1].lower())
-        #                 elif line[0] == "-":
-        #                     ex.append(line[1:-1].lower())
-        #         else:
-        #             DINFO(f"File {f} cannot be found")
+
         if not args.json and args.verbose:
             DINFO(f"Filtering{' '.join([f'+{f}' for f in fl])} {' '.join([f'-{e}' for e in ex])}")
 

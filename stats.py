@@ -29,12 +29,8 @@ def datetime_from_timestamp(str_timestamp):
     return datetime.fromtimestamp(timestamp) + timedelta(microseconds=microseconds)
 
 
-def read_data(filename):
-    data = {
-        'data': [],
-        'start': None,
-        'end': None
-    }
+def read_data(filename, verbose):
+    data = {'data': [], 'start': None, 'end': None, 'filename': filename}
 
     fo = open(filename, "r", errors='ignore')
     if not fo.readable():
@@ -66,6 +62,8 @@ def read_data(filename):
             ldata['name'] = "Desktop"
         else:
             ldata['name'] = ' '.join(sline[3:])
+        if verbose:
+            ldata['filename'] = filename
         data['data'].append(ldata)
 
     return data
@@ -94,9 +92,9 @@ def read_files(filenames, verbose):
             DINFO(f"warning : \"{filename}\" : No such file")
             continue
 
-        if verbose:
+        if verbose and not json:
             DINFO(f"Reading {filename}")
-        data = read_data(filename)
+        data = read_data(filename, verbose)
         if not data['data']:
             continue
         # with open("test.json", "w") as fo:

@@ -278,13 +278,13 @@ def filter_data(data, fl, ex):
 def sort_files(filename):
     fo = open(filename, "r", errors='ignore')
     if not fo.readable():
-        return None
+        return "[0000000000-000]"
     foo = fo.readlines()
     fo.close()
     try:
         return foo[3].split(' ')[0][1:-5]
     except:
-        return None
+        return "[0000000000-000]"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')

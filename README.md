@@ -3,16 +3,19 @@
 
 **X11 Activity Logger** is a lightweigt activity logger written in C for X11.
 
+**X11 Activity Logger** is *extremely* **lightweight**. How much you may ask, and why such a claim ? Well, see in [section below](#So-lightweight-you-forget-it's-active-!)
+
+
 # Features
 
 - Session duration with first and last entry
 - Sort applications by time spent on them
 - Sort windows names by time spent on them
 - Longuest sessions without window switching
-- A daemon
 - Analyze multiple log files, filter by keywords
+- A daemon
 
-To be added :
+Todolist : 
 - [x] Autorestart if the logger fails (daemon)
 - [x] Adapt the ouput size with the terminal size (displays ... if too long)
 - [x] Detects if file is empty.
@@ -30,13 +33,16 @@ To be added :
 - [ ] Change active time for the used activity when using the filter option
 - [x] Output time in seconds if < to  min
 - [x] Support reading last N logfiles by first entry
+- [ ] Support wayland !
+- [ ] Complete README. It's missing so much stuff
+- [ ] Fix bug when the last entry has a [XXX-999] timestamp
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
 - [ ] Sort windows names by application name
 - [ ] Add window name on startup
 - [ ] Add the timestamp of longuests sessions
 - [ ] Read last files by header instead of by date modification (i.e subsequent modification)
-- [ ] Dumping data
+- [x] Dumping data (--json)
 - [ ] Ignore window switch if long session interupted by a quick switch
 
 Ideas - Keylogger feature
@@ -83,6 +89,24 @@ Ideas - Keylogger feature
 `py stats.py` or `py stats.py <date>.wins`
 
 > By default, if no log file is specified, the last modified .wins file will be read.
+
+# So lightweight you forget it's active !
+
+When running, the logger uses only 13 MB of RAM.
+
+![ram.png](ram.png)
+
+Over on year of activity has been logged for only 61Mo.
+
+![disk.png](disk.png)
+
+The logger only dumps when a window switch is detected, by multiple event triggers from the X11 lib itself.
+*activity-logger* lacks an AFK detector, but this is the todo-list.
+
+The code itself is light, with only 400 lines of code, but it also consumes extremely little, especially when compared to activity-watch, which admittedly has more features and is prettier, but is also much much more bloated.
+
+![ram_usage_edited.png](ram_usage_edited.png)
+![disk_usage_edited.png](disk_usage_edited.png)
 
 # Keylogger feature (not included by default)
 In addition, a small keylogger has been implemented, which is not yet in use. It could be used in the future.

@@ -1,9 +1,9 @@
 ![code size](https://img.shields.io/github/languages/code-size/fm16191/activity-logger?style=flat)
-# X11 Activity Logger
+# Activity Logger
 
-**X11 Activity Logger** is a lightweigt activity logger written in C for X11.
+**Activity Logger** is a lightweigt activity logger written in C for X11 (and wayland, see [below](#wayland-support)).
 
-**X11 Activity Logger** is *extremely* **lightweight**. How much you may ask, and why such a claim ? Well, see in [section below](#So-lightweight-you-forget-it's-active-!)
+**Activity Logger** is *extremely* **lightweight**. How much you may ask, and why such a claim ? Well, see in [section below](#so-lightweight-you-forget-its-active)
 
 
 # Features
@@ -33,12 +33,12 @@ Todolist :
 - [ ] Change active time for the used activity when using the filter option
 - [x] Output time in seconds if < to  min
 - [x] Support reading last N logfiles by first entry
-- [ ] Support wayland !
+- [ ] Support wayland ! *- It's almost here ! see [below](#wayland-support)*
 - [ ] Complete README. It's missing so much stuff
 - [ ] Fix bug when the last entry has a [XXX-999] timestamp
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
-- [ ] Sort windows names by application name
+- [ ] ~~Sort windows names by application name~~
 - [ ] Add window name on startup
 - [ ] Add the timestamp of longuests sessions
 - [ ] Read last files by header instead of by date modification (i.e subsequent modification)
@@ -100,13 +100,41 @@ Over on year of activity has been logged for only 61Mo.
 
 ![disk.png](disk.png)
 
-The logger only dumps when a window switch is detected, by multiple event triggers from the X11 lib itself.
-*activity-logger* lacks an AFK detector, but this is the todo-list.
+The logger only dumps when a window change is detected, and this when some events are triggered by the desktop environment API.
+*activity-logger* lacks an AFK detector, but this is the todo-list. You can always specify AFK (shown as Desktop) times, using the `clean.sh` file or manual edits.
 
 The code itself is light, with only 400 lines of code, but it also consumes extremely little, especially when compared to activity-watch, which admittedly has more features and is prettier, but is also much much more bloated.
 
 ![ram_usage_edited.png](ram_usage_edited.png)
 ![disk_usage_edited.png](disk_usage_edited.png)
+
+# Wayland support
+
+Wayland support is *almost* here !
+
+Well, it can be compiled ! but with some extra unecessary steps ... \
+Let me explain ! 
+
+Here's the (unecessary overkill) installation process for wayland support : 
+- Clone and install the [`wlroots` git repository](https://gitlab.freedesktop.org/wlroots/wlroots.git)
+- copy the `wayland_logger.c` file to `wlroots/examples/`
+- edit `wlroots/examples/meson.build`, and in the `clients = {`, section (~ line 60) append the following :
+  ```meson
+  	'wayland_logger': {
+		'src': 'wayland_logger.c',
+		'proto': ['wlr-foreign-toplevel-management-unstable-v1'],
+	},
+  ```
+- now in `wlroots/`, compile ! : 
+  ```bash
+  $ meson setup --reconfigure build
+  $ cd build
+  $ ninja
+  ```
+- Copy the compiled executable to `activity-logger/`
+
+Here it should work. \
+Despite my best efforts so far, I haven't managed to enable a simplified compilation with just the bare essentials ... but I'd be very grateful for anyone who'd like to help solve the problem! Don't hesitate to open a PR or come discuss about it at #2
 
 # Keylogger feature (not included by default)
 In addition, a small keylogger has been implemented, which is not yet in use. It could be used in the future.

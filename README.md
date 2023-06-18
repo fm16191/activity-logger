@@ -54,7 +54,7 @@ Ideas - Keylogger feature
 
 # Exemple output
 
-![example.png](example.png)
+![example.png](pics/example.png)
 
 # Usage
 
@@ -94,19 +94,19 @@ Ideas - Keylogger feature
 
 When running, the logger uses only 13 MB of RAM.
 
-![ram.png](ram.png)
+![ram.png](pics/ram.png)
 
 Over on year of activity has been logged for only 61Mo.
 
-![disk.png](disk.png)
+![disk.png](pics/disk.png)
 
 The logger only dumps when a window change is detected, and this when some events are triggered by the desktop environment API.
 *activity-logger* lacks an AFK detector, but this is the todo-list. You can always specify AFK (shown as Desktop) times, using the `clean.sh` file or manual edits.
 
 The code itself is light, with only 400 lines of code, but it also consumes extremely little, especially when compared to activity-watch, which admittedly has more features and is prettier, but is also much much more bloated.
 
-![ram_usage_edited.png](ram_usage_edited.png)
-![disk_usage_edited.png](disk_usage_edited.png)
+![ram_usage_edited.png](pics/ram_usage_edited.png)
+![disk_usage_edited.png](pics/disk_usage_edited.png)
 
 # Wayland support
 

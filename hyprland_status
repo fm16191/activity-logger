@@ -11,14 +11,15 @@ dump(){
  class: Desktop"
     fi
 
+    # title=$(echo "$res" | grep -E "*title" | sed 's/^[^:]*: //g') # Does not work if "title" is in title !
     # title=$(echo "$res" | jq -r '.title') # hyprctl activewindow -j
     # title=$(echo "$res" | awk -F': ' '/^[[:space:]]*title:/ {print $2}')
     # title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p')
 
-    # Fastest method tested
-    title=$(echo "$res" | grep title | sed 's/^[^:]*: //g')
-    class=$(echo "$res" | grep class | sed 's/^[^:]*: //g')
-    printf -v pid "%05d" "$(echo "$res" | grep pid | sed 's/^[^:]*: //g')" || printf -v pid "%05d" 0
+    # Almost as fast, but stronger regex
+    title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p')
+    class=$(echo "$res" | sed -n 's/^[[:space:]]*class: //p')
+    printf -v pid "%05d" "$(echo "$res" | sed -n 's/^[[:space:]]*pid: //p')" || printf -v pid "%05d" 0
 
     printf -v new "[$pid] [$class] $title"
 

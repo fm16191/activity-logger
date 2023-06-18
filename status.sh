@@ -5,6 +5,9 @@ path=$(dirname "$(realpath $0)")
 if [ ! -z $HYPRLAND_INSTANCE_SIGNATURE ]; then
     echo "Mode : Wayland/hyprland"
     name="hyprland_status"
+elif [ $XDG_SESSION_TYPE = "wayland" ]; then
+    echo "Mode : Wayland";
+    name="wayland_status"
 else
     echo "Mode : Xorg";
     name="status"

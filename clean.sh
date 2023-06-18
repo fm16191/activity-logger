@@ -5,16 +5,21 @@ if [ ! -x "$(command -v dialog)" ]; then
     exit
 fi
 
-if [ "$1" = '' ];
-then
-    file=$(find . -name "*.wins" -printf "%T@ %p\n" | sort -n -r | sed -E "s/[0-9]+\.[0-9]+\ //" | head -n 1)
-else
-    if [ ! -f "$1" ]; then echo "File cannot be accessed"; exit; fi
-    file="$1"
-fi
+echo "Usage : $0 [file]"
+echo "        ./stats.py [options] --json | $0"
 
-output=$(python3 stats.py -i "$file" -s --json)
-# echo "$output"
+if [ -t 0 ]; then
+    if [ "$1" = '' ]; then
+        file=$(find . -name "*.wins" -printf "%T@ %p\n" | sort -n -r | sed -E "s/[0-9]+\.[0-9]+\ //" | head -n 1)
+    else
+        file="$1"
+    fi
+
+    if [ ! -f "$file" ]; then echo "File cannot be accessed"; exit; fi
+    output=$(python3 stats.py -i "$file" -s -f "_Desktop" --json)
+else
+    read -r output
+fi
 
 # IFS=$'\r\n' GLOBIGNORE='*' command eval 'testt=("$(echo "$output" | jq '.[].name')")'
 # IFS=$'\n' read -d '' -r -a testt <<< "$(echo "$output" | jq '.[].name')"
@@ -92,5 +97,4 @@ for c in $choices; do
     else 
         sed -i "s/\[$tr].*/\[$tr] \[00000] \[Desktop]/g" $file
     fi
-    exit
 done

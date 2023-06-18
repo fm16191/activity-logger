@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from sys import argv, stdout
 import json
@@ -253,7 +255,7 @@ def filter_data(data, fl, ex):
         for x in data['data']:
             for item in fl:
                 item = item.lower()
-                if item in x['exe'] or item in x['name']:
+                if item in x['exe'].lower() or item in x['name'].lower():
                     lss.append(x)
                     break
         data['data'] = lss
@@ -278,13 +280,13 @@ def filter_data(data, fl, ex):
 def sort_files(filename):
     fo = open(filename, "r", errors='ignore')
     if not fo.readable():
-        return "[0000000000-000]"
+        DERROR(f"{filename} cannot be read.")
     foo = fo.readlines()
     fo.close()
     try:
         return foo[3].split(' ')[0][1:-5]
     except:
-        return "[0000000000-000]"
+        return "[9999999999-999]"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Displays logged X11 activity')
@@ -329,6 +331,8 @@ if __name__ == "__main__":
 
         ll = sorted([os.path.join(folder, file) for file in os.listdir(folder) if file.endswith(".wins")], key=lambda x: sort_files(x), reverse=True)
         filenames = ll[:args.last] if args.last else ll
+        if args.verbose :
+            DINFO(f"Filenames : {filenames}")
 
     if len(filenames) == 0:
         print("No log files specified")

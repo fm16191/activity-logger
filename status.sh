@@ -2,20 +2,34 @@
 
 path=$(dirname "$(realpath $0)")
 
+if [ ! -z $HYPRLAND_INSTANCE_SIGNATURE ]; then
+    echo "Mode : Wayland/hyprland"
+    name="hyprland_status"
+else
+    echo "Mode : Xorg";
+    name="status"
+    if  ! pgrep -x "Xorg" >/dev/null;
+    then
+        echo "Xorg needs to be started first"
+        exit
+    fi
+fi
+
 start() {
-    cd "$path" && "$path"/status & disown
+    cd "$path" && "$path"/$name & disown
+    exit 0;
 }
 
 is_running(){
-    pgrep -x status >/dev/null
+    pgrep -x $name > /dev/null
 }
 
 is_running_echo(){
-    is_running && echo "./status is running" || echo "./status is not running"
+    is_running && echo "$name is running" || echo "$name is not running"
 }
 
 stop(){
-    killall status && echo "Stopped instances"
+    killall $name && echo "Stopped instances"
 }
 
 daemon(){
@@ -29,7 +43,7 @@ daemon(){
 }
 
 daemon_running(){
-    processes=($(pgrep -x status.sh))
+    processes=($(pgrep -x "$(basename $0)"))
     if [ ${#processes[@]} = 1 ];
     then
         false
@@ -40,12 +54,12 @@ daemon_running(){
 }
 
 daemon_running_echo(){
-    daemon_running && echo "./status daemon is running" || is_running_echo
+    daemon_running && echo "$name daemon is running" || is_running_echo
 }
 
 daemon_kill(){
-    # for all status.sh process except it's own pid
-    processes=($(pgrep -x status.sh))
+    # for all status.sh ($0) process except it's own pid
+    processes=($(pgrep -x "$(basename $0)"))
     if [ ${#processes[@]} = 1 ];
     then
         echo "No daemon is running"
@@ -57,17 +71,11 @@ daemon_kill(){
         kill "$p"
         echo "Killing daemon $p"
     done && printf "\r" || echo "No daemon terminated"
-    # killall status.sh
 }
 
 print_help(){
     echo "Usage : $0 [status | start | stop | restart | daemon | kill]"
 }
-
-if  ! pgrep -x "Xorg" >/dev/null;
-then
-    echo "Xorg needs to be started first"
-fi
 
 if [ "$1" = '' ];
 then

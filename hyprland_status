@@ -1,0 +1,42 @@
+#!/bin/sh
+
+dump(){
+    t=$(date +"%s-%3N")
+    tmp_path=".hyprland_logger.tmp"
+    res="$(hyprctl activewindow)"
+
+    if [ "$res" = "Invalid" ]; then
+        res=" title: Desktop
+ pid: 00000
+ class: Desktop"
+    fi
+
+    # title=$(echo "$res" | jq -r '.title') # hyprctl activewindow -j
+    # title=$(echo "$res" | awk -F': ' '/^[[:space:]]*title:/ {print $2}')
+    # title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p')
+
+    # Fastest method tested
+    title=$(echo "$res" | grep title | sed 's/^[^:]*: //g')
+    class=$(echo "$res" | grep class | sed 's/^[^:]*: //g')
+    printf -v pid "%05d" "$(echo "$res" | grep pid | sed 's/^[^:]*: //g')" || printf -v pid "%05d" 0
+
+    printf -v new "[$pid] [$class] $title"
+
+    # echo "NEW : $new;"
+    # echo "OLD : $(cat $tmp_path);"
+
+    [ "$new" = "$(cat $tmp_path)" ] || echo "[$t] $new"
+    echo $new > $tmp_path
+}
+
+
+handle() {
+  case $1 in
+    activewindow*) dump >> $filename ;;
+  esac
+}
+
+filename="$(date +"%d-%m-%Y_%Hh%Mm%S").wins"
+echo -en "Starting at $(date +"%a %b %d %T %Y")\n\n" > $filename
+
+socat -U - UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do handle "$line"; done

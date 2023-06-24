@@ -12,7 +12,8 @@
 - Sort applications by time spent on them
 - Sort windows names by time spent on them
 - Longuest sessions without window switching
-- Analyze multiple log files, filter by keywords
+- Analyze multiple log files
+- Filter activities by keywords
 - A daemon
 
 Todolist : 
@@ -29,8 +30,10 @@ Todolist :
 - [x] Add option to exclude "Desktop" window logs
 - [ ] Add % per application on total active time
 - [x] Add a folder option for all .wins files
-- [ ] Add openrc script & update README
+- [ ] ~~Add openrc script & update README~~
 - [ ] Change active time for the used activity when using the filter option
+- [x] Update filter to also support exact queries
+- [x] Split a logfile in two
 - [x] Output time in seconds if < to  min
 - [x] Support reading last N logfiles by first entry
 - [ ] Support wayland ! *- It's almost here ! see [below](#wayland-support)*
@@ -41,7 +44,7 @@ Todolist :
 - [ ] ~~Sort windows names by application name~~
 - [ ] Add window name on startup
 - [ ] Add the timestamp of longuests sessions
-- [ ] Read last files by header instead of by date modification (i.e subsequent modification)
+- [x] Read last files by header instead of by date modification (i.e subsequent modification)
 - [x] Dumping data (--json)
 - [ ] Ignore window switch if long session interupted by a quick switch
 

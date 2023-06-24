@@ -16,7 +16,7 @@ if [ -t 0 ]; then
     fi
 
     if [ ! -f "$file" ]; then echo "File cannot be accessed"; exit; fi
-    output=$(python3 stats.py -i "$file" -s -f "_Desktop" --json)
+    output=$(python3 stats.py -i "$file" -s -f "_=Desktop" --json)
 else
     read -r output
 fi

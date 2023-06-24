@@ -253,11 +253,18 @@ def filter_data(data, fl, ex):
     if len(fl) >= 1:
         lss = []
         for x in data['data']:
+            exe = x['exe']
+            name = x['name']
             for item in fl:
-                item = item.lower()
-                if item in x['exe'].lower() or item in x['name'].lower():
-                    lss.append(x)
-                    break
+                if item[0] == "=": # Search for exact queries
+                    if item[1:] == exe or item[1:] == name:
+                        lss.append(x)
+                        break
+                else:
+                    item = item.lower()
+                    if item in exe.lower() or item in name.lower():
+                        lss.append(x)
+                        break
         data['data'] = lss
 
     # Excluding keywords
@@ -268,7 +275,14 @@ def filter_data(data, fl, ex):
         exe = x['exe'].lower()
         name = x['name'].lower()
         for item in ex:
-            if item in exe or item in name:
+            if item[0] == "=":
+                if item[1:] == exe or item[1:] == name:
+                    # del data['data'][i]
+                    data['data'].pop(i)
+                    i = i - 1
+                    imax = imax - 1
+                    break
+            elif item in exe or item in name:
                 # del data['data'][i]
                 data['data'].pop(i)
                 i = i - 1

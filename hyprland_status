@@ -1,7 +1,7 @@
 #!/bin/sh
 
 dump(){
-    t=$(date +"%s-%3N")
+    t=$(LC_ALL=en_US.utf8 date +"%s-%3N")
     tmp_path=".hyprland_logger.tmp"
     res="$(hyprctl activewindow)"
 
@@ -37,7 +37,7 @@ handle() {
   esac
 }
 
-filename="$(date +"%d-%m-%Y_%Hh%Mm%S").wins"
-echo -en "Starting at $(date +"%a %b %d %T %Y")\n\n" > $filename
+filename="$(LC_ALL=en_US.utf8 date +"%d-%m-%Y_%Hh%Mm%S").wins"
+echo -en "Starting at $(LC_ALL=en_US.utf8 date +"%a %b %d %T %Y")\n\n" > $filename
 
 socat -U - UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do handle "$line"; done

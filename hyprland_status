@@ -1,6 +1,15 @@
 #!/bin/sh
 
-dump(){
+command -v hyprctl >/dev/null 2>&1 || { echo >&2 "hyprctl was not found"; exit 1; }
+command -v socat >/dev/null 2>&1 || { echo >&2 "socat was not found"; exit 1; }
+command -v date >/dev/null 2>&1 || { echo >&2 "date was not found"; exit 1; }
+command -v sed >/dev/null 2>&1 || { echo >&2 "sed was not found"; exit 1; }
+command -v tr >/dev/null 2>&1 || { echo >&2 "tr was not found"; exit 1; }
+
+unset status_dump
+unset status_handle
+
+status_dump(){
     t=$(LC_ALL=en_US.utf8 date +"%s-%3N")
     tmp_path=".hyprland_logger.tmp"
     res="$(hyprctl activewindow)"
@@ -17,7 +26,7 @@ dump(){
     # title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p')
 
     # Almost as fast, but stronger regex
-    title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p')
+    title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p' | sed 's/%/%%/g;s/\\n/\\\\n/g')
     class=$(echo "$res" | sed -n 's/^[[:space:]]*class: //p')
     printf -v pid "%05d" "$(echo "$res" | sed -n 's/^[[:space:]]*pid: //p')" || printf -v pid "%05d" 0
 
@@ -27,17 +36,17 @@ dump(){
     # echo "OLD : $(cat $tmp_path);"
 
     [ "$new" = "$(cat $tmp_path)" ] || echo "[$t] $new"
-    echo $new > $tmp_path
+    echo "$new" > $tmp_path
 }
 
 
-handle() {
+status_handle() {
   case $1 in
-    activewindow*) dump >> $filename ;;
+    activewindow*) status_dump >> $filename ;;
   esac
 }
 
 filename="$(LC_ALL=en_US.utf8 date +"%d-%m-%Y_%Hh%Mm%S").wins"
 echo -en "Starting at $(LC_ALL=en_US.utf8 date +"%a %b %d %T %Y")\n\n" > $filename
 
-socat -U - UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do handle "$line"; done
+socat -U - UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do status_handle "$line"; done

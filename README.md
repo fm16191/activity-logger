@@ -25,13 +25,14 @@ Todolist :
 - [x] Output time in days & hours & minutes according to their duration
 - [x] Analyze multiple log files at once
 - [x] Add active time (with %)
+- [ ] Add % per application on total active time
+- [ ] Print active time removing `Shutdown` and `Desktop` activities
+- [ ] Change active time for the used activity when using the filter option
 - [x] -a / --all flag
 - [x] Exclude, filter activites by keywords
 - [x] Add option to exclude "Desktop" window logs
-- [ ] Add % per application on total active time
 - [x] Add a folder option for all .wins files
 - [ ] ~~Add openrc script & update README~~
-- [ ] Change active time for the used activity when using the filter option
 - [x] Update filter to also support exact queries
 - [x] Split a logfile in two
 - [x] Output time in seconds if < to  min

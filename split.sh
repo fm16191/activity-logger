@@ -17,7 +17,11 @@ sed -n "/^\[$timestamp/,\$p" $input >> $output
 # Delete from first file
 sed -n "/^\[$timestamp/q;p" -i $input
 
-echo "New file : echo $output"
+t2=$(tail -n 1 $input | sed 's/\[\([0-9]*\)-.*/\1/')
+touch -d@$t2 $input
+
+echo "Old file : $input"
+echo "New file : $output"
 
 touch -d @$timestamp $output
 stat $output

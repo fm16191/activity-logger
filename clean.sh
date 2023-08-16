@@ -35,6 +35,7 @@ IFS=" " read -ra timestamps <<< "$(echo "$output" | jq '.[].timestamp|=(split("-
 IFS=$'\n' read -d '' -r -a names <<< "$(echo "$output" | jq '.[].name')"
 IFS=" " read -ra pids <<< "$(echo "$output" | jq '.[].pid' | xargs)"
 IFS=" " read -ra exes <<< "$(echo "$output" | jq '.[].exe' | xargs)"
+IFS=" " read -ra filenames <<< "$(echo "$output" | jq '.[].filename' | xargs)"
 
 contents=()
 count=${#pids[@]}
@@ -64,6 +65,7 @@ options=(
     0 "${contents[0]}" off
     1 "${contents[1]}" off
     2 "${contents[2]}" off
+    3 "${contents[3]}" off
     4 "${contents[4]}" off
     5 "${contents[5]}" off
     6 "${contents[6]}" off
@@ -77,7 +79,6 @@ choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
 min="${durations[0]}"
 for it in $choices; do
-    echo "__$it"
     v=${durations[$it]}
     (( $(echo "$v < $min" | bc -l) )) && min=$v
 done
@@ -89,12 +90,17 @@ done
 for c in $choices; do
     # tr=$(echo "${timestamps[$c]}" | sed "s/\./-/g")
     tr=${timestamps[$c]//./-}
+    [ ! -f "$file" ] && file=${filenames[$c]}
+    echo "__$it $tr"
     if [ "$time" -gt 0 ]; then
         tr2="$(echo "${timestamps[$c]} + $time" | bc -l)"
         tr2=${tr2//./-}
-        # '/Unix/{n;s/.*/hi/}'
         sed -i "/\[$tr].*/{n;s/.*/\[$tr2] \[00000] \[Desktop]/}" $file
+        timestamp=$(tail -n 1 $file | sed 's/\[\([0-9]*\)-.*/\1/')
+        touch -d@$timestamp $file
     else 
         sed -i "s/\[$tr].*/\[$tr] \[00000] \[Desktop]/g" $file
+        timestamp=$(tail -n 1 $file | sed 's/\[\([0-9]*\)-.*/\1/')
+        touch -d@$timestamp $file
     fi
 done

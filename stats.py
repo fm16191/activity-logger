@@ -31,7 +31,7 @@ def datetime_from_timestamp(str_timestamp):
     return datetime.fromtimestamp(timestamp) + timedelta(microseconds=microseconds)
 
 
-def read_data(filename, verbose):
+def read_data(filename, verbose, json=False):
     data = {'data': [], 'start': None, 'end': None, 'filename': filename}
 
     fo = open(filename, "r", errors='ignore')
@@ -64,7 +64,7 @@ def read_data(filename, verbose):
             ldata['name'] = "Desktop"
         else:
             ldata['name'] = ' '.join(sline[3:])
-        if verbose:
+        if verbose or json:
             ldata['filename'] = filename
         data['data'].append(ldata)
 
@@ -84,7 +84,7 @@ def add_duration(data, last_entry_date):
     return data
 
 
-def read_files(filenames, verbose):
+def read_files(filenames, verbose, json=False):
     tdata = dict()
     tdata['start'] = None
     tdata['end'] = None
@@ -96,7 +96,7 @@ def read_files(filenames, verbose):
 
         if verbose and not json:
             DINFO(f"Reading {filename}")
-        data = read_data(filename, verbose)
+        data = read_data(filename, verbose, json)
         if not data['data']:
             continue
         tdata['data'].extend(data['data'])
@@ -345,7 +345,7 @@ if __name__ == "__main__":
 
         ll = sorted([os.path.join(folder, file) for file in os.listdir(folder) if file.endswith(".wins")], key=lambda x: sort_files(x), reverse=True)
         filenames = ll[:args.last] if args.last else ll
-        if args.verbose :
+        if args.verbose and not args.json :
             DINFO(f"Filenames : {filenames}")
 
     if len(filenames) == 0:
@@ -364,7 +364,7 @@ if __name__ == "__main__":
         print("======= X11 Activity logger =======")
     if not args.json and args.verbose:
         DINFO(len(filenames))
-    data = read_files(filenames, args.verbose)
+    data = read_files(filenames, args.verbose, args.json)
     if not data['start']:
         exit()
 

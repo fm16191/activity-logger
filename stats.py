@@ -315,13 +315,15 @@ if __name__ == "__main__":
         help='show every sort outputs')
     parser.add_argument('-f', '--filter', action='append', type=str, default=[],
         help='filter data. Usage : -f\"[+keyword to filter] [-keyword to exclude]...\"')
+    parser.add_argument('--factive', action='store_true', default=False,
+        help='Filter out non-active sessions. Alias for -f\"_=Shutdown _=Desktop\"')
     parser.add_argument('-x', '--exe', action='store', nargs='*', default=False,
         # required=False,
         # metavar='EXE',
         help='sort logged activities by executable name')
     parser.add_argument('-w', '--windows', action='store_true', default=False,
         help='sort logged activities by windows name')
-    parser.add_argument('-s', '--longuest-sessions', action='store_true',
+    parser.add_argument('-s', '--longuest-sessions', action='store_true', default=False,
         help='sort logged activities by longuest time spent on without switching')
     parser.add_argument('--history', action='store', type=int, default=[0],
         help='list latests sessions entry')
@@ -383,11 +385,14 @@ if __name__ == "__main__":
             print(f"Files           {len(filenames)}")
             print(f"Entries         {len(data['data'])}")
 
+    if args.factive:
+        args.filter += [f"_=Shutdown _=Desktop"]
     if args.filter:
         args.filter = " ".join(args.filter)
         fl = [] # +keyword
         ex = [] # -keyword
         for f in args.filter.split(" "):
+            if not f: continue
             if f[0] == "+":
                 fl.append(f[1:].lower())
             elif f[0] == "_":

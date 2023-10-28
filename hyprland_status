@@ -26,27 +26,27 @@ status_dump(){
     # title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p')
 
     # Almost as fast, but stronger regex
-    title=$(echo "$res" | sed -n 's/^[[:space:]]*title: //p' | sed 's/%/%%/g;s/\\n/\\\\n/g')
-    class=$(echo "$res" | sed -n 's/^[[:space:]]*class: //p')
-    printf -v pid "%05d" "$(echo "$res" | sed -n 's/^[[:space:]]*pid: //p')" || printf -v pid "%05d" 0
+    title=$(printf "%s" "$res" | sed -n 's/^[[:space:]]*title: //p' | sed 's/%/%%/g') # ;s/\\n/\\\\n/g')
+    class=$(printf "%s" "$res" | sed -n 's/^[[:space:]]*class: //p')
+    printf -v pid "%05d" "$(printf "%s" "$res" | sed -n 's/^[[:space:]]*pid: //p')" || printf -v pid "%05d" 0
 
-    printf -v new "[$pid] [$class] $title"
+    printf -v new "%s" "[$pid] [$class] $title"
 
     # echo "NEW : $new;"
     # echo "OLD : $(cat $tmp_path);"
 
-    [ "$new" = "$(cat $tmp_path)" ] || echo "[$t] $new"
-    echo "$new" > $tmp_path
+    [ "$new" = "$(cat $tmp_path)" ] || printf "%s\n" "[$t] $new"
+    printf "$new" > $tmp_path
 }
 
 
 status_handle() {
   case $1 in
-    activewindow*) status_dump >> $filename ;;
+    activewindow*) status_dump >> "$filename" ;;
   esac
 }
 
 filename="$(LC_ALL=en_US.utf8 date +"%d-%m-%Y_%Hh%Mm%S").wins"
-echo -en "Starting at $(LC_ALL=en_US.utf8 date +"%a %b %d %T %Y")\n\n" > $filename
+echo -en "Starting at $(LC_ALL=en_US.utf8 date +"%a %b %d %T %Y")\n\n" > "$filename"
 
 socat -U - UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do status_handle "$line"; done

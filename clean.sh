@@ -8,7 +8,7 @@ fi
 echo "Usage : $0 [file]"
 echo "        ./stats.py [options] --json | $0"
 
-if [ -t 0 ]; then
+if [ -t 0 ]; then # Has stuff in input
     if [ "$1" = '' ]; then
         file=$(find . -name "*.wins" -printf "%T@ %p\n" | sort -n -r | sed -E "s/[0-9]+\.[0-9]+\ //" | head -n 1)
     else
@@ -49,12 +49,12 @@ for it in $(seq 0 1 $((count-1))); do
     # echo "${names[$it]}"
     dur=${durations[$it]}
     dur=$(bc -l <<< "$dur")
-    printf -v dur "%.0d" $dur
+    dur=$(printf "%.0d" $dur 2>/dev/null)
     h=$((dur/3600))
     m=$((dur/60%60))
     s=$((dur%60))
 
-    printf -v contents[${#contents[@]}] "%dh%02dm%02ds | $(date -d "@${timestamps[$it]}" --rfc-3339=seconds | sed 's/+.*//g') [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null
+    contents[${#contents[@]}]=$(printf "%dh%02dm%02ds | $(date -d "@${timestamps[$it]}" --rfc-3339=seconds | sed 's/+.*//g') [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null)
 done
 # echo "${contents[@]}"
 # py stats.py -i 15-10-2022_14h46m14.wins -s --json | jq 'to_entries[0] | (.value.timestamp)|=(split("-")|join(".")|tonumber) | .value.duration'

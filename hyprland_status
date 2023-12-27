@@ -28,9 +28,11 @@ status_dump(){
     # Almost as fast, but stronger regex
     title=$(printf "%s" "$res" | sed -n 's/^[[:space:]]*title: //p' | sed 's/%/%%/g') # ;s/\\n/\\\\n/g')
     class=$(printf "%s" "$res" | sed -n 's/^[[:space:]]*class: //p')
-    printf -v pid "%05d" "$(printf "%s" "$res" | sed -n 's/^[[:space:]]*pid: //p')" || printf -v pid "%05d" 0
 
-    printf -v new "%s" "[$pid] [$class] $title"
+    pid=$(printf "%05d" "$(printf "%s" "$res" | sed -n 's/^[[:space:]]*pid: //p')")
+    pid=${pid:-0}
+
+    new=$(printf "[%s] [%s] %s" "$pid" "$class" "$title")
 
     # echo "NEW : $new;"
     # echo "OLD : $(cat $tmp_path);"
@@ -47,6 +49,6 @@ status_handle() {
 }
 
 filename="$(LC_ALL=en_US.utf8 date +"%d-%m-%Y_%Hh%Mm%S").wins"
-echo -en "Starting at $(LC_ALL=en_US.utf8 date +"%a %b %d %T %Y")\n\n" > "$filename"
+printf "%s" "Starting at $(LC_ALL=en_US.utf8 date +"%a %b %d %T %Y")\n\n" > "$filename"
 
 socat -U - UNIX-CONNECT:/tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do status_handle "$line"; done

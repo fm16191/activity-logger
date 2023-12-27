@@ -24,12 +24,13 @@ count=${#pids[@]}
 for it in $(seq 0 1 $((count-1))); do
     dur=${durations[$it]}
     dur=$(bc -l <<< "$dur")
-    printf -v dur "%.0d" $dur 2>/dev/null
+    dur=$(printf "%.0d" $dur 2>/dev/null)
     h=$((dur/3600))
     m=$((dur/60%60))
     s=$((dur%60))
 
-    printf -v contents[${#contents[@]}] "%dh%02dm%02ds | $(date -d "@${timestamps[$it]}" --rfc-3339=seconds | sed 's/+.*//g') [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null
+    contents[${#contents[@]}]=$(printf "%dh%02dm%02ds | $(date -d "@${timestamps[$it]}" --rfc-3339=seconds | sed 's/+.*//g') [${exes[$it]}] ${names[$it]}" $h $m $s 2>/dev/null)
+
 done 
 
 cmd=(dialog --keep-tite --separate-output --checklist "Select options:" 16 120 8)

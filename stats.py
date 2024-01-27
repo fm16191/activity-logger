@@ -252,19 +252,15 @@ def filter_data(data, fl, ex):
     # Filtering keywords
     if len(fl) >= 1:
         lss = []
+        exact = [f[1:] for f in fl if f[0] == '=']
+        approx = [f.lower() for f in fl if f[0] != '=']
+
         for x in data['data']:
-            exe = x['exe']
-            name = x['name']
-            for item in fl:
-                if item[0] == "=": # Search for exact queries
-                    if item[1:] == exe or item[1:] == name:
-                        lss.append(x)
-                        break
-                else:
-                    item = item.lower()
-                    if item in exe.lower() or item in name.lower():
-                        lss.append(x)
-                        break
+            if exact:
+                if any(f == x['exe'] or f == x['name'] for f in exact): lss.append(x); continue
+            if approx:
+                for f in approx:
+                    if f in x['exe'].lower() or f in x['name'].lower(): lss.append(x); break
         data['data'] = lss
 
     # Excluding keywords
@@ -394,9 +390,9 @@ if __name__ == "__main__":
         for f in args.filter.split(" "):
             if not f: continue
             if f[0] == "+":
-                fl.append(f[1:].lower())
+                fl.append(f[1:])
             elif f[0] == "_":
-                ex.append(f[1:].lower())
+                ex.append(f[1:])
 
         if not args.json and args.verbose:
             DINFO(f"Filtering{' '.join([f'+{f}' for f in fl])} {' '.join([f'-{e}' for e in ex])}")

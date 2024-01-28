@@ -132,7 +132,11 @@ def read_files(filenames, verbose, json=False):
     return tdata
 
 
-def print_time(duration):
+def print_time(duration:float):
+    global args
+    if args.seconds:
+        return f"{duration:8.0f}s"
+
     if duration / (3600*24) > 1.0:
         return f"{int(duration/(3600*24)):3.0f}d {duration%(3600*24)/3600:3.1f}h"
     elif duration / 3600 > 1.0:
@@ -326,7 +330,9 @@ if __name__ == "__main__":
     parser.add_argument('--history', action='store', nargs='?', type=int, const=20, default=None,
         help='list latests sessions entry')
     parser.add_argument('--json', action='store_true', default=False,
-        help='display in JSON format')
+        help='display in JSON format. Default : False')
+    parser.add_argument('--seconds', action='store_true', default=False,
+        help='display all durations in seconds. Default : False')
 
     parser.add_argument('-v', '--verbose', action='store_true', default=False)
 

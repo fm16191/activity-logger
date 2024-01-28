@@ -148,7 +148,6 @@ def print_time(duration:float):
 
 
 def longuest_sessions(data, count:int, json_dump:bool=None, stdout_size_max:bool=None):
-    print('count', count)
     sessions = sorted(data['data'], key=lambda sub_data: sub_data['duration'], reverse=True)
     sessions = sessions[:count]
     if json_dump:

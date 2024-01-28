@@ -143,18 +143,20 @@ def print_time(duration):
         return f"{duration:8.0f}s"
 
 
-def longuest_sessions(data, json_dump=None, stdout_size_max=None):
+def longuest_sessions(data, count:int, json_dump:bool=None, stdout_size_max:bool=None):
+    print('count', count)
     sessions = sorted(data['data'], key=lambda sub_data: sub_data['duration'], reverse=True)
+    sessions = sessions[:count]
     if json_dump:
-        for i in range(len(sessions[:10])):
+        for i in range(len(sessions)):
             # sessions[i]['timstamp2'] = float(sessions[i]['timestamp'].replace("-","."))
             sessions[i]['duration'] = sessions[i]['duration'].total_seconds()
-        print(json.dumps(sessions[:10], ensure_ascii=False))
+        print(json.dumps(sessions, ensure_ascii=False))
         return
 
     print("\n> Longest sessions")
     print(f"{C.BOLD}{C.GREEN}{' Duration':8}{C.YELLOW}{'   Executable'}\t{C.CYAN}{'Window Name'}{C.END}\n")
-    for item in sessions[:10]:
+    for item in sessions:
         name = item['name']
         if stdout_size_max and len(name) > stdout_size_max - 24 - 1:
             name = name[:stdout_size_max - 24 - 1] + "…"
@@ -319,9 +321,9 @@ if __name__ == "__main__":
         help='sort logged activities by executable name')
     parser.add_argument('-w', '--windows', action='store_true', default=False,
         help='sort logged activities by windows name')
-    parser.add_argument('-s', '--longuest-sessions', action='store_true', default=False,
-        help='sort logged activities by longuest time spent on without switching')
-    parser.add_argument('--history', action='store', type=int, default=[0],
+    parser.add_argument('-s', '--longuest-sessions', nargs='?', type=int, const=10, default=None,
+        help='sort logged activities by longest time spent on without switching')
+    parser.add_argument('--history', action='store', nargs='?', type=int, const=20, default=None,
         help='list latests sessions entry')
     parser.add_argument('--json', action='store_true', default=False,
         help='display in JSON format')
@@ -399,11 +401,12 @@ if __name__ == "__main__":
 
         data = filter_data(data, fl, ex)
 
-    if args.all or args.longuest_sessions != False:
-        longuest_sessions(data, args.json, stdout_size_max)
+    if args.all or args.longuest_sessions:
+        longuest_sessions(data, args.longuest_sessions, args.json, stdout_size_max)
     if args.all or args.exe != False:
         data_by_exe(data, args.json, stdout_size_max)
     if args.all or args.windows != False:
         data_by_activity_name(data, args.json, stdout_size_max)
-    if args.history != [0]:
+
+    if args.history:
         history(data, args.history, args.json, stdout_size_max)

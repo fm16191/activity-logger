@@ -147,8 +147,10 @@ def print_time(duration:float):
         return f"{duration:8.0f}s"
 
 
-def longuest_sessions(data, count:int, json_dump:bool=None, stdout_size_max:bool=None):
+def longuest_sessions(data, count:int=None, json_dump:bool=None, stdout_size_max:bool=None):
     sessions = sorted(data['data'], key=lambda sub_data: sub_data['duration'], reverse=True)
+    if count == None:
+        count = 10
     sessions = sessions[:count]
     if json_dump:
         for i in range(len(sessions)):

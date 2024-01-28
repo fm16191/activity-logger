@@ -90,12 +90,12 @@ done
 for c in $choices; do
     # tr=$(echo "${timestamps[$c]}" | sed "s/\./-/g")
     tr=${timestamps[$c]//./-}
-    [ ! -f "$file" ] && file=${filenames[$c]}
-    echo "__$it $tr"
+    file=${filenames[$c]}
+    echo "__$c $tr"
     if [ "$time" -gt 0 ]; then
         tr2="$(echo "${timestamps[$c]} + $time" | bc -l)"
         tr2=${tr2//./-}
-        sed -i "/\[$tr].*/{n;s/.*/\[$tr2] \[00000] \[Desktop]/}" $file
+        sed -i "/\[$tr].*/{n;s/.*/\[$tr2] \[00000] \[Desktop]/}" $file # Add new line
         timestamp=$(tail -n 1 $file | sed 's/\[\([0-9]*\)-.*/\1/')
         touch -d@$timestamp $file
     else 

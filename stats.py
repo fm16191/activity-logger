@@ -273,17 +273,15 @@ def filter_data(data, fl, ex):
     i = 0
     while i < imax:
         x = data['data'][i]
-        exe = x['exe'].lower()
-        name = x['name'].lower()
         for item in ex:
             if item[0] == "=":
-                if item[1:] == exe or item[1:] == name:
+                if item[1:] == x['exe'] or item[1:] == x['name']:
                     # del data['data'][i]
                     data['data'].pop(i)
                     i = i - 1
                     imax = imax - 1
                     break
-            elif item in exe or item in name:
+            elif item in x['exe'].lower() or item in x['name'].lower():
                 # del data['data'][i]
                 data['data'].pop(i)
                 i = i - 1

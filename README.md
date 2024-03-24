@@ -23,10 +23,10 @@ Todolist :
 - [x] Add argument parsing, for each output
 - [x] Longests sessions without window switching
 - [x] Output time in days & hours & minutes according to their duration
-- [x] Analyze multiple log files at once
+- [x] Analyze multiple log files at once (`-l X`)
 - [x] Add active time (with %)
 - [ ] Add % per application on total active time
-- [ ] Print active time removing `Shutdown` and `Desktop` activities
+- [x] Print active time removing `Shutdown` and `Desktop` activities (`--factive`)
 - [ ] Change active time for the used activity when using the filter option
 - [x] -a / --all flag
 - [x] Exclude, filter activites by keywords
@@ -39,7 +39,7 @@ Todolist :
 - [x] Support reading last N logfiles by first entry
 - [ ] Support wayland ! *- It's almost here ! see [below](#wayland-support)*
 - [ ] Complete README. It's missing so much stuff
-- [ ] Fix bug when the last entry has a [XXX-999] timestamp
+- [x] Fix bug when the last entry has a [XXX-999] timestamp
 - [ ] Correct file encoding issue
 - [ ] Activity history with duration and in tree if same process
 - [ ] ~~Sort windows names by application name~~

@@ -106,7 +106,7 @@ def read_files(filenames, verbose, json=False):
             last_timestamp = data['data'][-1]['timestamp']
             last_timestamp_ms = int(last_timestamp[-3:])
             last_timestamp_s = int(last_timestamp[:-4])
-            if last_timestamp_ms > 0:
+            if last_timestamp_ms > 1000:
                 last_timestamp_ms = last_timestamp_ms + 1
             else:
                 last_timestamp_ms = 0

@@ -61,18 +61,25 @@ done
 
 cmd=(dialog --keep-tite --separate-output --checklist "Select options:" 16 120 8)
 # for _ in (seq ${#pids[@]})
-options=(
-    0 "${contents[0]}" off
-    1 "${contents[1]}" off
-    2 "${contents[2]}" off
-    3 "${contents[3]}" off
-    4 "${contents[4]}" off
-    5 "${contents[5]}" off
-    6 "${contents[6]}" off
-    7 "${contents[7]}" off
-    8 "${contents[8]}" off
-    9 "${contents[9]}" off
-)
+# options=(
+#     0 "${contents[0]}" off
+#     1 "${contents[1]}" off
+#     2 "${contents[2]}" off
+#     3 "${contents[3]}" off
+#     4 "${contents[4]}" off
+#     5 "${contents[5]}" off
+#     6 "${contents[6]}" off
+#     7 "${contents[7]}" off
+#     8 "${contents[8]}" off
+#     9 "${contents[9]}" off
+# )
+
+options=()
+
+for i in $(seq 0 1 $((count-1))); do
+    options+=( "$i" "${contents[$i]}" "off" )
+done
+
 choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
 
 [ -n "$choices" ] || exit

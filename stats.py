@@ -6,15 +6,19 @@ import json
 from datetime import datetime
 from datetime import timedelta
 import argparse
+from sys import stderr
 
 from colors import C
+
+def eprint(*args, **kwargs):
+    print(*args, file=stderr, **kwargs)
 
 def DOK(content):
     print(f"\033[92m{content}\033[0m")
 def DINFO(content):
     print(f"\033[93m{content}\033[0m")
 def DERROR(content):
-    print(f"\033[91m{content}\033[0m")
+    eprint(f"\033[91m{content}\033[0m")
 
 
 def get_timestamp(line):
